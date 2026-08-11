@@ -55,3 +55,4 @@ A robust, fully automated Telegram bot system engineered to streamline workflows
   ```bash
    python manage.py runserver
   
+* Note: The .env file containing live AWS, Database, and Telegram API credentials is purposefully excluded from this repository for security best practices.
