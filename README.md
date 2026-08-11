@@ -50,3 +50,8 @@ A robust, fully automated Telegram bot system engineered to streamline workflows
 * 5.Apply Database Migration:
    ```bash
    python manage.py migrate
+
+* 6.Run the Django Development Server:
+  ```bash
+   python manage.py runserver
+  
