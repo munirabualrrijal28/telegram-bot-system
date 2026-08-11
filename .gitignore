@@ -223,3 +223,6 @@ CREATE_EB_ENVIRONMENT.md
 DEPLOY_NOW.md
 deploy_production.ps1
 fix_duplicate_oauth.sql
+.elasticbeanstalk/
+PRODUCTION_CREDENTIALS.md
+CHECK_ENVIRONMENT.md
