@@ -39,3 +39,14 @@ A robust, fully automated Telegram bot system engineered to streamline workflows
    DB_NAME=your_db_name
    DB_USER=your_db_user
    DB_PASS=your_db_password
+
+``
+* 4.Install dependencies :
+   ```bash
+   pip install -r requirements.txt
+   
+
+``
+* 5.Apply Database Migration:
+   ```bash
+   python manage.py migrate
