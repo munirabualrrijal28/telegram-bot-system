@@ -23,3 +23,18 @@ A robust, fully automated Telegram bot system engineered to streamline workflows
 1. **Clone the repository:**
    ```bash
    git clone [https://github.com/munirabualrrijal28/telegram-bot-system.git](https://github.com/munirabualrrijal28/telegram-bot-system.git)
+   
+2. **Navigate to the directory:**
+   ```bash
+   cd telegram-bot-system
+
+``
+3. **Environment Setup:**
+* **Create a .env file in the root directory. **
+   ```bash
+   SECRET_KEY=your_django_secret_key
+   DEBUG=True
+   BOT_TOKEN=your_telegram_bot_token
+   DB_NAME=your_db_name
+   DB_USER=your_db_user
+DB_PASS=your_db_password
