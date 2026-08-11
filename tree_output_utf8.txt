@@ -1,0 +1,280 @@
+/
+├── .ebextensions
+│   ├── 01_django.config
+│   ├── 01_django_minimal.config
+│   └── 02_python.config
+├── .elasticbeanstalk
+│   ├── app_versions
+│   │   └── app-260204_041749123170.zip
+│   ├── logs
+│   └── config.yml
+├── admin_app
+│   ├── management
+│   │   ├── commands
+│   │   │   ├── seeds
+│   │   │   │   └── seed_admin.py
+│   │   │   ├── __init__.py
+│   │   │   ├── fix_activation_code_uuids.py
+│   │   │   └── seed_admin.py
+│   │   └── __init__.py
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_delete_activationcode.py
+│   │   └── __init__.py
+│   ├── templates
+│   │   └── admin_app
+│   │       ├── activation_code_create.html
+│   │       ├── activation_codes.html
+│   │       ├── base_admin.html
+│   │       ├── broadcast.html
+│   │       ├── dashboard.html
+│   │       ├── login.html
+│   │       ├── subscription_list.html
+│   │       ├── subscription_update.html
+│   │       ├── user_manage.html
+│   │       └── users_list.html
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── urls.py
+│   └── views.py
+├── ai_service
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_alter_airequest_user.py
+│   │   └── __init__.py
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── tests.py
+│   └── views.py
+├── bot_app
+│   ├── management
+│   │   ├── commands
+│   │   │   ├── __init__.py
+│   │   │   └── set_webhooks.py
+│   │   └── __init__.py
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_initial.py
+│   │   ├── 0003_delete_subscriptioncode.py
+│   │   ├── 0004_botsettings_start_keywords.py
+│   │   ├── 0005_alter_botsettings_start_keywords.py
+│   │   ├── 0006_remove_pagegroup_medicines.py
+│   │   ├── 0007_remove_pagegroup_attachments.py
+│   │   ├── 0008_create_groupitem.py
+│   │   └── __init__.py
+│   ├── telegram
+│   │   ├── handlers
+│   │   │   ├── __init__.py
+│   │   │   ├── callback_handler.py
+│   │   │   ├── category_handler.py
+│   │   │   ├── faq_handler.py
+│   │   │   └── message_handler.py
+│   │   ├── utils
+│   │   │   ├── __init__.py
+│   │   │   ├── api.py
+│   │   │   ├── keyboards.py
+│   │   │   └── loader.py
+│   │   ├── __init__.py
+│   │   ├── constants.py
+│   │   ├── state.py
+│   │   └── views.py
+│   ├── templates
+│   │   └── bot_app
+│   │       ├── components
+│   │       │   └── bot_selector.html
+│   │       ├── management
+│   │       │   └── management.html
+│   │       ├── miniapp
+│   │       │   └── page.html
+│   │       ├── partials
+│   │       │   ├── _category_item.html
+│   │       │   ├── _subcategory_content.html
+│   │       │   ├── faq_list_by_category.html
+│   │       │   ├── faq_modal.html
+│   │       │   ├── page_list_item.html
+│   │       │   └── subcategory_tree_item.html
+│   │       ├── settings
+│   │       │   └── bot_settings.html
+│   │       ├── subscription
+│   │       │   └── subscription.html
+│   │       ├── base.html
+│   │       ├── bot_settings.html.backup
+│   │       └── nav_bot.html
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── context_processors.py
+│   ├── forms.py
+│   ├── middleware.py
+│   ├── models.py
+│   ├── telegram_utils.py
+│   ├── tests.py
+│   ├── urls.py
+│   ├── view_patches.py
+│   ├── views.py
+│   └── views_miniapp.py
+├── bot_management_system
+│   ├── __init__.py
+│   ├── asgi.py
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+├── core
+│   ├── management
+│   │   └── commands
+│   │       ├── createsu.py
+│   │       └── fix_telegram_users.py
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_remove_appuser_user_remove_appuser_workspace_and_more.py
+│   │   ├── 0003_delete_appuser_telegramuser_idx_tg_user_telegram_and_more.py
+│   │   ├── 0004_telegramuser_has_used_free_trial_and_more.py
+│   │   ├── 0005_alter_workspace_table.py
+│   │   └── __init__.py
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── tests.py
+│   └── views.py
+├── ecom
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_alter_inventorytransaction_performed_by_and_more.py
+│   │   └── __init__.py
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── tests.py
+│   └── views.py
+├── home_app
+│   ├── migrations
+│   │   └── __init__.py
+│   ├── templates
+│   │   └── home_app
+│   │       └── home.html
+│   ├── __init__.py
+│   ├── apps.py
+│   ├── urls.py
+│   └── views.py
+├── pharmacy_app
+│   ├── management
+│   │   ├── commands
+│   │   │   ├── __init__.py
+│   │   │   └── create_django_users.py
+│   │   └── __init__.py
+│   ├── migrations
+│   │   └── __init__.py
+│   ├── templates
+│   │   └── owner
+│   │       ├── attachments
+│   │       │   └── attachments_page.html
+│   │       ├── auth
+│   │       │   ├── auth.html
+│   │       │   ├── auth_backup.html
+│   │       │   ├── auth_temp.html
+│   │       │   ├── auth_working.html
+│   │       │   ├── login.html
+│   │       │   └── signup.html
+│   │       ├── dashboard
+│   │       │   └── dashboard.html
+│   │       ├── medicines
+│   │       │   ├── _medicine_row.html
+│   │       │   ├── medicine_confirm_delete.html
+│   │       │   ├── medicine_form.html
+│   │       │   └── medicines_list.html
+│   │       ├── partials
+│   │       │   ├── _attachments_tab_content.html
+│   │       │   ├── _medicine_js.html
+│   │       │   ├── _medicine_modals.html
+│   │       │   ├── _medicines_tab_content.html
+│   │       │   └── medicine_form_modal_content.html
+│   │       ├── auth.html
+│   │       └── base.html
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── signals.py
+│   ├── tests.py
+│   ├── urls.py
+│   ├── view_patches.py
+│   ├── views.py
+│   └── views.py.broken
+├── .ebignore
+├── .env.example
+├── .env.production
+├── .gitignore
+├── about_this_project.md
+├── AWS_explain.md
+├── bot-key.pem
+├── Bot_models.md
+├── BotTelegram.md
+├── check_encoding.sql
+├── CHECK_ENVIRONMENT.md
+├── complete_django_migration.sql
+├── create_allauth_tables.sql
+├── create_bot_ecom_tables.sql
+├── create_core_tables.sql
+├── create_deploy_zip.py
+├── CREATE_EB_ENVIRONMENT.md
+├── CREATE_S3_BUCKET.md
+├── debug_404.html
+├── debug_log.txt
+├── delete_user_amv.sql
+├── delete_user_amv_safe.sql
+├── deploy_manual.zip
+├── DEPLOY_NOW.md
+├── deploy_production.ps1
+├── deploy_to_eb.ps1
+├── deploy_vps.ps1
+├── DEPLOYMENT.md
+├── download.svg
+├── EB_QUICKSTART.md
+├── eb_setenv_commands.txt
+├── EMERGENCY_STATUS.md
+├── FINAL_FIX.md
+├── fix_charset.sh
+├── fix_deployment.ps1
+├── fix_duplicate_oauth.sql
+├── fix_emoji_encoding.sql
+├── FIX_SSH_MIGRATIONS.md
+├── fix_tables_final.sql
+├── fix_user_profile.sql
+├── fix_welcome_message_column.sql
+├── GET_RDS_ENDPOINT.md
+├── icons8-bot-50.png
+├── manage.py
+├── MANUAL_MIGRATE_FIX.md
+├── NEXT_STEPS.md
+├── nginx_site_config
+├── problem_solve.md
+├── Procfile
+├── PRODUCTION_CREDENTIALS.md
+├── PRODUCTION_SETUP.md
+├── RDS_ACCESS_GUIDE.md
+├── RDS_CREDENTIALS.md
+├── RDS_SETUP_GUIDE.md
+├── remote_deploy.sh
+├── requirements-minimal.txt
+├── requirements.txt
+├── S3_SETUP_GUIDE.md
+├── seed_social.py
+├── server_setup.sh
+├── SSH_SETUP_CONFIRM.md
+├── TechUsed.md
+├── TeleBot.md
+├── test_webhook.html
+├── test_webhook_python.py
+├── tree_output.txt
+├── tree_output_utf8.txt
+├── tree_structure_extractor.py
+├── TROUBLESHOOTING.md
+└── URGENT_FIX_DJANGO_SITE.md

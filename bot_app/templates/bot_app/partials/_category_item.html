@@ -1,0 +1,74 @@
+<li class="list-group-item bg-light category-item">
+
+    <!-- CATEGORY HEADER -->
+    <div class="category-header d-flex justify-content-between align-items-center" data-toggle="collapse"
+        data-target="#block-{{ category.id }}" aria-expanded="true" style="cursor: pointer;">
+
+        <strong>{{ category.name }}</strong>
+
+        <div class="actions">
+
+            <button class="btn btn-sm btn-success addQuestionBtn" data-category="{{ category.id }}">
+                + Add Question
+            </button>
+            
+            <button class="btn btn-sm btn-secondary addSubCategoryBtn" data-category="{{ category.id }}">
+                + Add Subcategory
+            </button>
+
+
+            <button class="btn btn-sm btn-warning editCategoryBtn" data-id="{{ category.id }}">Edit</button>
+            <button class="btn btn-sm btn-danger deleteCategoryBtn" data-id="{{ category.id }}">Delete</button>
+        </div>
+    </div>
+
+    <!-- COLLAPSIBLE BLOCK: FAQs + SUBCATEGORIES -->
+    <div class="collapse show category-content" id="block-{{ category.id }}">
+
+        <!-- FAQS -->
+        {% if category.faqs.all %}
+        <ul class="list-group mt-2 faq-list">
+
+            {% for faq in category.faqs.all %}
+
+            <li class="list-group-item faq-item d-flex justify-content-between align-items-center"
+                data-id="{{ faq.id }}" data-question="{{ faq.question|escapejs }}"
+                data-answer="{{ faq.answer|escapejs }}" {% if faq.category %} data-category="{{ faq.category.id }}" {%
+                else %} data-category="" {% endif %}>
+                <div>
+                    <div>
+                        <span
+                            class="badge faq-status-toggle {% if faq.is_active %}bg-success{% else %}bg-secondary{% endif %}"
+                            data-faq-id="{{ faq.id }}" style="cursor:pointer;">
+                            {% if faq.is_active %}Active{% else %}Inactive{% endif %}
+                        </span>
+                    </div>
+
+                    <strong>Q:</strong> {{ faq.question }}<br>
+                    <small><strong>A:</strong> {{ faq.answer }}</small>
+                </div>
+                <div>
+                    <!-- <button class="btn btn-sm btn-warning editFaqBtn">Edit</button> -->
+                    <button class="btn btn-sm btn-warning editFaqBtn" data-id="{{ faq.id }}">Edit</button>
+
+                    <button class="btn btn-sm btn-danger deleteFaqBtn">Delete</button>
+                </div>
+            </li>
+
+
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <!-- SUBCATEGORIES -->
+        {% if category.subcategories.all %}
+        <ul class="list-group mt-3 subcategory-list">
+            {% for subcategory in category.subcategories.all %}
+            {% include "bot_app/partials/_category_item.html" with category=subcategory %}
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+
+
+</li>

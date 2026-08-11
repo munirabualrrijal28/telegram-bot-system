@@ -1,0 +1,109 @@
+{% extends "admin_app/base_admin.html" %} {% block title %}Update Subscription -
+Admin Panel{% endblock %} {% block content %}
+<div class="mb-8 flex items-center gap-4">
+  <a
+    href="{% url 'admin_app:subscription_list' %}"
+    class="p-2 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
+  >
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M10 19l-7-7m0 0l7-7m-7 7h18"
+      ></path>
+    </svg>
+  </a>
+  <div>
+    <h2 class="text-2xl font-bold text-gray-800">Update Subscription</h2>
+    <p class="text-gray-600">Managing plan for {{ user_obj.name }}</p>
+  </div>
+</div>
+
+<div class="max-w-2xl">
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <div class="mb-6 pb-6 border-b border-gray-100">
+      <h3
+        class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4"
+      >
+        Current Status
+      </h3>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <span class="text-xs text-gray-400">Current Plan</span>
+          <p class="font-semibold text-gray-900">
+            {{ current_sub.plan_name|default:"Free" }}
+          </p>
+        </div>
+        <div>
+          <span class="text-xs text-gray-400">Status</span>
+          <p
+            class="font-semibold {% if current_sub.status == 'active' %}text-green-600{% else %}text-red-600{% endif %}"
+          >
+            {{ current_sub.status|default:"Active"|title }}
+          </p>
+        </div>
+        <div>
+          <span class="text-xs text-gray-400">Workspace</span>
+          <p class="text-gray-900">{{ user_obj.workspace.name|default:"-" }}</p>
+        </div>
+        <div>
+          <span class="text-xs text-gray-400">Expires</span>
+          <p class="text-gray-900">
+            {{ current_sub.end_date|date:"M d, Y"|default:"-" }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <form method="POST" class="space-y-6">
+      {% csrf_token %}
+
+      <div>
+        <label
+          for="{{ form.plan_name.id_for_label }}"
+          class="block text-sm font-medium text-gray-700 mb-1"
+          >New Plan</label
+        >
+        {{ form.plan_name }}
+      </div>
+
+      <div>
+        <label
+          for="{{ form.status.id_for_label }}"
+          class="block text-sm font-medium text-gray-700 mb-1"
+          >Status</label
+        >
+        {{ form.status }}
+      </div>
+
+      <div>
+        <label
+          for="{{ form.end_date.id_for_label }}"
+          class="block text-sm font-medium text-gray-700 mb-1"
+          >Expiration Date</label
+        >
+        {{ form.end_date }}
+        <p class="mt-1 text-xs text-gray-500">
+          Leave empty to keep current date or set default (30 days)
+        </p>
+      </div>
+
+      <div class="pt-4 flex items-center gap-4">
+        <button
+          type="submit"
+          class="flex-1 flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+        >
+          Update Subscription
+        </button>
+        <a
+          href="{% url 'admin_app:subscription_list' %}"
+          class="flex-1 flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+        >
+          Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

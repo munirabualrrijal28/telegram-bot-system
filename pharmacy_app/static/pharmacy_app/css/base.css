@@ -1,0 +1,6 @@
+/* Base styles for TeleBot Admin Panel */
+
+/* Alpine.js cloak utility */
+[x-cloak] {
+  display: none !important;
+}

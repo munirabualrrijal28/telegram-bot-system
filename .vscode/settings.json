@@ -1,0 +1,10 @@
+{
+  // Python interpreter path (points to the virtual environment)
+  "python.defaultInterpreterPath": "${workspaceFolder}/django_env/Scripts/python.exe",
+
+  // Automatically activate the virtual environment when opening a terminal
+  "python.terminal.activateEnvironment": true,
+
+  // Use the virtual environment's Python for all Python operations
+  "python.terminal.activateEnvInCurrentTerminal": true
+}

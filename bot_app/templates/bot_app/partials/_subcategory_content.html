@@ -1,0 +1,51 @@
+<div class="border {{ border_color }} rounded-lg overflow-hidden bg-white shadow-sm mb-2">
+    <!-- Header -->
+    <div class="p-3 {{ header_bg }} flex justify-between items-center {{ header_border }} border-b">
+        <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 {{ icon_color }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {% if depth == 0 %}
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                {% else %}
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                {% endif %}
+            </svg>
+            <div class="font-semibold text-gray-900 text-sm">{{ sub.name }}</div>
+        </div>
+        <div class="flex gap-1">
+            <button data-action="add-subcategory" data-category-id="{{ sub.id }}" class="px-2 py-1 rounded {{ btn_bg }} border {{ btn_border }} {{ btn_text }} {{ btn_hover }} text-xs font-medium transition-colors">+ Nested</button>
+            <button data-action="add-question" data-category-id="{{ sub.id }}" class="px-2 py-1 rounded {{ btn_bg }} border border-green-200 text-green-600 hover:bg-green-50 text-xs font-medium transition-colors">+ FAQ</button>
+            <button data-action="edit-category" data-category-id="{{ sub.id }}" data-category-name="{{ sub.name|escapejs }}" class="px-2 py-1 rounded {{ btn_bg }} border border-yellow-200 text-yellow-600 hover:bg-yellow-50 text-xs font-medium transition-colors">Edit</button>
+            <button data-action="delete-category" data-category-id="{{ sub.id }}" data-category-name="{{ sub.name|escapejs }}" class="px-2 py-1 rounded {{ btn_bg }} border border-red-200 text-red-600 hover:bg-red-50 text-xs font-medium transition-colors">Delete</button>
+        </div>
+    </div>
+
+    <!-- Content (FAQs + Children) -->
+    <div class="p-2 bg-white">
+        <!-- FAQs -->
+        {% if sub.faqs.all %}
+        <div class="mb-2 space-y-1">
+            {% for faq in sub.faqs.all %}
+            <div class="p-2 bg-gray-50 border border-gray-100 rounded flex justify-between items-start hover:bg-gray-100 transition-colors">
+                <div class="flex-1 pr-2">
+                    <div class="text-xs font-medium text-gray-900">Q: {{ faq.question }}</div>
+                    <div class="text-xs text-gray-500 truncate">A: {{ faq.answer|default:"..." }}</div>
+                </div>
+                <div class="flex gap-1">
+                    <button data-action="edit-question" data-faq-id="{{ faq.id }}" class="text-xs text-yellow-600 hover:text-yellow-700">Edit</button>
+                    <button data-action="delete-question" data-faq-id="{{ faq.id }}" class="text-xs text-red-600 hover:text-red-700">Del</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Recursive Children -->
+        {% if sub.subcategories.all %}
+        <div class="pl-4 border-l-2 {{ nested_border }} space-y-2">
+            {% for child in sub.subcategories.all %}
+                {% include "bot_app/partials/subcategory_tree_item.html" with sub=child depth=depth|add:1 %}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>

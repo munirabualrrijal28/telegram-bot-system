@@ -1,0 +1,82 @@
+/* =============================
+   FAQ CATEGORY TREE STYLE
+   ============================= */
+
+.list-group-item {
+  border: none;
+  position: relative;
+}
+
+/* ----- MAIN CATEGORY HEADER ----- */
+.category-header {
+  background: linear-gradient(90deg, #007bff, #0056b3); /* Blue */
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+.category-header:hover {
+  filter: brightness(1.15);
+}
+
+/* ----- SUBCATEGORY HEADER (Green) ----- */
+.subcategory-list > .category-item > .category-header {
+  background: linear-gradient(90deg, #28a745, #1d7432);
+}
+
+/* ----- SUB-SUBCATEGORY HEADER (Purple) ----- */
+.subcategory-list .subcategory-list > .category-item > .category-header {
+  background: linear-gradient(90deg, #6f42c1, #4b2e8a);
+}
+
+/* ----- FAQ LIST ----- */
+.faq-item {
+  background: #f9fbfd;
+  border: 1px solid #e2e2e2;
+  border-radius: 8px;
+  margin-bottom: 5px;
+  margin-inline-start: 15px;
+  transition: background 0.3s ease;
+}
+.faq-item:hover {
+  background: #eef3fb;
+}
+
+/* ----- TREE CONNECTING LINES ----- */
+.subcategory-list {
+  margin-left: 25px;
+  padding-left: 15px;
+  border-left: 2px dashed #007bff33;
+}
+.subcategory-list .subcategory-list {
+  border-color: #28a74533;
+}
+
+/* ----- ACTION BUTTONS ----- */
+.category-header .btn {
+  margin-left: 5px;
+}
+
+/* ----- ARROW INDICATOR ----- */
+.category-header::before {
+  content: "▶";
+  font-size: 12px;
+  margin-right: 10px;
+  transition: transform 0.3s ease;
+  opacity: 0.8;
+}
+.category-header[aria-expanded="true"]::before {
+  transform: rotate(90deg);
+}
+
+/* ----- SMOOTH COLLAPSE ANIMATION ----- */
+.category-content.collapse {
+  display: block;
+  height: 0;
+  overflow: hidden;
+  transition: height 0.8s ease;
+}
+.category-content.collapse.show {
+  height: auto;
+  transition: height 0.9s ease;
+}

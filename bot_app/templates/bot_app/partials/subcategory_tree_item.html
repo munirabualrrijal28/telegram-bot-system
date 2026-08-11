@@ -1,0 +1,11 @@
+{# Wrapper to determine colors based on depth #}
+{% if depth|divisibleby:3 %}
+    {# Level 0, 3, 6... (Blue) #}
+    {% include "bot_app/partials/_subcategory_content.html" with border_color="border-blue-200" header_bg="bg-blue-50" header_border="border-blue-100" icon_color="text-blue-600" btn_bg="bg-white" btn_border="border-blue-200" btn_text="text-blue-600" btn_hover="hover:bg-blue-50" nested_border="border-blue-100" %}
+{% elif depth|add:"-1"|divisibleby:3 %}
+    {# Level 1, 4, 7... (Purple) #}
+    {% include "bot_app/partials/_subcategory_content.html" with border_color="border-purple-200" header_bg="bg-purple-50" header_border="border-purple-100" icon_color="text-purple-500" btn_bg="bg-white" btn_border="border-purple-200" btn_text="text-purple-600" btn_hover="hover:bg-purple-50" nested_border="border-purple-100" %}
+{% else %}
+    {# Level 2, 5, 8... (Orange) #}
+    {% include "bot_app/partials/_subcategory_content.html" with border_color="border-orange-200" header_bg="bg-orange-50" header_border="border-orange-100" icon_color="text-orange-400" btn_bg="bg-white" btn_border="border-orange-200" btn_text="text-orange-600" btn_hover="hover:bg-orange-50" nested_border="border-orange-100" %}
+{% endif %}

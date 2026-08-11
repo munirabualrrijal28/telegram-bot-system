@@ -1,0 +1,471 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TeleBot - Build Powerful Telegram Bots</title>
+    <link rel="stylesheet" href="{% static 'css/home.css' %}" />
+    <link rel="stylesheet" href="{% static 'fonts/css/all.min.css' %}" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="container nav-container">
+        <div class="logo">
+          <a href="#" class="fa-solid fa-robot"> </a>
+          <span class="logo-text">TeleBot</span>
+        </div>
+        <div class="nav-links">
+          <a href="#home">Home</a>
+          <a href="#features">Features</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#contact">Contact</a>
+        </div>
+        <div class="nav-auth">
+          {% if user.is_authenticated %}
+          <a
+            href="{% url 'pharmacy_app:owner_dashboard' %}"
+            class="btn btn-primary"
+            style="padding: 0.5rem 1rem; font-size: 0.9rem"
+            >Dashboard</a
+          >
+
+          <!-- Notification Bell -->
+          <div class="user-menu-container">
+            <button
+              class="notification-bell"
+              onclick="toggleNotificationMenu()"
+            >
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                ></path>
+              </svg>
+              <span class="notification-badge">3</span>
+            </button>
+            <div class="dropdown-menu" id="notificationDropdown">
+              <div
+                style="
+                  padding: 0.75rem 1rem;
+                  border-bottom: 1px solid #e5e7eb;
+                  background-color: #f9fafb;
+                "
+              >
+                <p
+                  style="font-weight: 600; font-size: 0.875rem; color: #111827"
+                >
+                  Notifications
+                </p>
+              </div>
+              <a href="#" class="dropdown-item">
+                <div>
+                  <div style="font-weight: 500; font-size: 0.875rem">
+                    New user registered
+                  </div>
+                  <div style="font-size: 0.75rem; color: #6b7280">
+                    5 minutes ago
+                  </div>
+                </div>
+              </a>
+              <a href="#" class="dropdown-item">
+                <div>
+                  <div style="font-weight: 500; font-size: 0.875rem">
+                    System update available
+                  </div>
+                  <div style="font-size: 0.75rem; color: #6b7280">
+                    1 hour ago
+                  </div>
+                </div>
+              </a>
+              <a href="#" class="dropdown-item">
+                <div>
+                  <div style="font-weight: 500; font-size: 0.875rem">
+                    New message received
+                  </div>
+                  <div style="font-size: 0.75rem; color: #6b7280">
+                    2 hours ago
+                  </div>
+                </div>
+              </a>
+              <a
+                href="#"
+                class="dropdown-item"
+                style="
+                  text-align: center;
+                  color: #2563eb;
+                  border-top: 1px solid #e5e7eb;
+                "
+              >
+                View all notifications
+              </a>
+            </div>
+          </div>
+
+          <!-- User Menu -->
+          <div class="user-menu-container">
+            <button class="user-icon-btn" onclick="toggleUserMenu()">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                ></path>
+              </svg>
+            </button>
+            <div class="dropdown-menu" id="userDropdown">
+              <a
+                href="#"
+                class="dropdown-item"
+                onclick="
+                  openSupportModal();
+                  return false;
+                "
+              >
+                <i class="fa-solid fa-headset"></i> Support
+              </a>
+              <a
+                href="{% url 'pharmacy_app:owner_logout' %}"
+                class="dropdown-item text-danger"
+              >
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+              </a>
+            </div>
+          </div>
+
+          <script>
+            function toggleNotificationMenu() {
+              const dropdown = document.getElementById("notificationDropdown");
+              const userDropdown = document.getElementById("userDropdown");
+              // Close user dropdown if open
+              userDropdown.classList.remove("show");
+              dropdown.classList.toggle("show");
+            }
+
+            function toggleUserMenu() {
+              const dropdown = document.getElementById("userDropdown");
+              const notificationDropdown = document.getElementById(
+                "notificationDropdown",
+              );
+              // Close notification dropdown if open
+              notificationDropdown.classList.remove("show");
+              dropdown.classList.toggle("show");
+            }
+
+            // Close dropdown when clicking outside
+            window.onclick = function (event) {
+              if (
+                !event.target.matches(".user-icon-btn") &&
+                !event.target.closest(".user-icon-btn") &&
+                !event.target.matches(".notification-bell") &&
+                !event.target.closest(".notification-bell")
+              ) {
+                const dropdowns =
+                  document.getElementsByClassName("dropdown-menu");
+                for (let i = 0; i < dropdowns.length; i++) {
+                  const openDropdown = dropdowns[i];
+                  if (openDropdown.classList.contains("show")) {
+                    openDropdown.classList.remove("show");
+                  }
+                }
+              }
+
+              // Close modal when clicking outside
+              const modal = document.getElementById("supportModal");
+              if (event.target == modal) {
+                closeSupportModal();
+              }
+            };
+
+            function openSupportModal() {
+              const modal = document.getElementById("supportModal");
+              modal.style.display = "flex"; // Show the modal
+              modal.classList.add("show");
+              // Close dropdown if open
+              const dropdown = document.getElementById("userDropdown");
+              dropdown.classList.remove("show");
+            }
+
+            function closeSupportModal() {
+              const modal = document.getElementById("supportModal");
+              modal.style.display = "none"; // Hide the modal
+              modal.classList.remove("show");
+            }
+          </script>
+          {% else %}
+          <a href="/owner/login/" class="login-btn">Login</a>
+          <a href="/owner/signup/" class="get-started-btn">Get Started</a>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero" id="home">
+      <div class="container hero-container">
+        <h1>
+          Build Powerful <span class="highlight">Telegram Bots</span> in Minutes
+        </h1>
+        <p class="hero-subtitle">
+          Create, manage, and deploy intelligent Telegram bots without writing a
+          single line of code. Perfect for businesses, communities, and
+          developers.
+        </p>
+        <div class="hero-buttons">
+          <a href="/owner/login/" class="btn btn-primary">Start Free Trial</a>
+          <a href="#features" class="btn btn-secondary">Learn More</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Dashboard Preview -->
+    <section class="dashboard-preview">
+      <div class="container">
+        <div class="dashboard-card">
+          <div class="dashboard-header">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+            <span class="dashboard-title">TeleBot Dashboard</span>
+          </div>
+          <div class="dashboard-content">
+            <div class="stat-card">
+              <div class="stat-icon user-icon"></div>
+              <div class="stat-info">
+                <span class="stat-label">Active Users</span>
+                <span class="stat-value">12,847</span>
+                <span class="stat-trend positive">+12% this week</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon message-icon"></div>
+              <div class="stat-info">
+                <span class="stat-label">Messages</span>
+                <span class="stat-value">284,392</span>
+                <span class="stat-trend positive">+5% this week</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon bot-icon"></div>
+              <div class="stat-info">
+                <span class="stat-label">Active Bots</span>
+                <span class="stat-value">48</span>
+                <span class="stat-trend neutral">Running smoothly</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+      <div class="container">
+        <div class="section-header">
+          <h2>Powerful Features</h2>
+          <p>
+            Everything you need to create and manage professional Telegram bots
+          </p>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon builder-icon"></div>
+            <h3>Easy Bot Builder</h3>
+            <p>
+              Drag and drop interface to create complex bot workflows without
+              coding.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon deploy-icon"></div>
+            <h3>Instant Deployment</h3>
+            <p>
+              Deploy your bots instantly with one click. No server setup
+              required.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon secure-icon"></div>
+            <h3>Secure & Reliable</h3>
+            <p>Enterprise-grade security with 99.9% uptime guarantee.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon smart-icon"></div>
+            <h3>Smart Responses</h3>
+            <p>AI-powered responses that understand context and intent.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon user-icon"></div>
+            <h3>User Management</h3>
+            <p>Track and manage your bot users with detailed analytics.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon analytics-icon"></div>
+            <h3>Analytics Dashboard</h3>
+            <p>Real-time insights into bot performance and user engagement.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+      <div class="container">
+        <div class="section-header">
+          <h2>Simple Pricing</h2>
+          <p>
+            Choose the plan that fits your needs. Start free, upgrade when
+            ready.
+          </p>
+        </div>
+        <div class="pricing-grid">
+          <!-- Free Plan -->
+          <div class="pricing-card">
+            <div class="plan-name">Free</div>
+            <div class="plan-price">$0<span class="period">/month</span></div>
+            <ul class="plan-features">
+              <li><span class="check">✓</span> 1 Bot</li>
+              <li><span class="check">✓</span> 1,000 messages/month</li>
+              <li><span class="check">✓</span> Basic analytics</li>
+              <li><span class="check">✓</span> Community support</li>
+            </ul>
+            <a href="/owner/signup/" class="btn btn-outline">Get Started</a>
+          </div>
+
+          <!-- Free Trial Plan -->
+          <div class="pricing-card">
+            <div class="plan-name">Free Trial</div>
+            <div class="plan-price">
+              7 Days<span class="period">/once</span>
+            </div>
+            <ul class="plan-features">
+              <li><span class="check">✓</span> All Pro Features</li>
+              <li><span class="check">✓</span> 10 Bots</li>
+              <li><span class="check">✓</span> 50,000 messages</li>
+              <li><span class="check">✓</span> Priority support</li>
+            </ul>
+            <a href="/owner/signup/" class="btn btn-outline">Try Free</a>
+          </div>
+
+          <!-- Pro Plan -->
+          <div class="pricing-card popular">
+            <div class="popular-tag">Most Popular</div>
+            <div class="plan-name">Pro</div>
+            <div class="plan-price">$29<span class="period">/month</span></div>
+            <ul class="plan-features">
+              <li><span class="check">✓</span> 10 Bots</li>
+              <li><span class="check">✓</span> 50,000 messages/month</li>
+              <li><span class="check">✓</span> Advanced analytics</li>
+              <li><span class="check">✓</span> Priority support</li>
+              <li><span class="check">✓</span> Custom branding</li>
+            </ul>
+            <a href="/owner/signup/" class="btn btn-primary full-width"
+              >Get Started</a
+            >
+          </div>
+
+          <!-- Enterprise Plan -->
+          <div class="pricing-card">
+            <div class="plan-name">Enterprise</div>
+            <div class="plan-price">$99<span class="period">/month</span></div>
+            <ul class="plan-features">
+              <li><span class="check">✓</span> Unlimited Bots</li>
+              <li><span class="check">✓</span> Unlimited messages</li>
+              <li><span class="check">✓</span> Full analytics suite</li>
+              <li><span class="check">✓</span> 24/7 support</li>
+              <li><span class="check">✓</span> Custom integrations</li>
+              <li><span class="check">✓</span> SLA guarantee</li>
+            </ul>
+            <a href="#" class="btn btn-outline">Get Started</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+      <div class="container">
+        <div class="section-header">
+          <h2>Get in Touch</h2>
+          <p>Have questions? We'd love to hear from you.</p>
+        </div>
+        <div class="contact-grid">
+          <div class="contact-card">
+            <div class="contact-icon email-icon"></div>
+            <h3>Email</h3>
+            <p>munirabualrrijal28@gmail.com</p>
+          </div>
+          <div class="contact-card">
+            <div class="contact-icon phone-icon"></div>
+            <h3>Phone</h3>
+            <p>+967 777928412</p>
+          </div>
+          <div class="contact-card">
+            <div class="contact-icon office-icon"></div>
+            <h3>Office</h3>
+            <p>Online</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container footer-container">
+        <div class="footer-logo">
+          <img
+            src="{% static 'home_app/images/logo_placeholder.png' %}"
+            alt="TeleBot Logo"
+            class="footer-logo-img"
+          />
+          <span class="footer-logo-text">TeleBot</span>
+        </div>
+        <div class="footer-links">
+          <a href="#">Terms of Service</a>
+          <a href="#">Privacy Policy</a>
+        </div>
+        <div class="footer-copyright">
+          &copy; 2024 TeleBot. All rights reserved.
+        </div>
+      </div>
+    </footer>
+
+    <!-- Support Modal -->
+    <div id="supportModal" class="modal-overlay" style="display: none">
+      <div class="modal-container">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div class="modal-icon">
+              <i class="fa-solid fa-headset fa-lg"></i>
+            </div>
+            <div class="modal-text">
+              <h3 class="modal-title">Support</h3>
+              <div class="modal-description">
+                If you need assistance, please contact us at the following
+                E-mail:
+              </div>
+              <p class="modal-email">munirabualrrijal28@gmail.com</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="modal-close-btn"
+            onclick="closeSupportModal()"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

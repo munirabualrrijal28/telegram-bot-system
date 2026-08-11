@@ -1,0 +1,159 @@
+{# templates/bot_app/partials/page_list_item.html #}
+<div
+  class="ml-4 mt-2 border-l-2 border-purple-200 pl-4"
+  id="page-{{ page.id }}"
+>
+  <div
+    class="flex justify-between items-center bg-purple-50 p-3 rounded-lg border border-purple-100 mb-2 cursor-pointer hover:bg-purple-100 transition-colors"
+    onclick="togglePageGroups('{{ page.id }}')"
+  >
+    <div class="flex items-center gap-2">
+      <svg
+        id="chevron-{{ page.id }}"
+        class="w-5 h-5 text-purple-500 transform transition-transform duration-200"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M19 9l-7 7-7-7"
+        ></path>
+      </svg>
+      <span class="font-medium text-gray-800">{{ page.name }}</span>
+    </div>
+    <div class="flex gap-2" onclick="event.stopPropagation()">
+      <button
+        onclick="openAddGroupModal('{{ page.id }}')"
+        class="text-xs px-2 py-1 bg-white border border-purple-200 text-purple-600 rounded hover:bg-purple-100 transition-colors"
+      >
+        + Add Group
+      </button>
+      <button
+        onclick="openEditPageModal('{{ page.id }}', '{{ page.name|escapejs }}')"
+        class="text-xs px-2 py-1 bg-white border border-gray-200 text-gray-600 rounded hover:bg-gray-50 transition-colors"
+      >
+        Edit
+      </button>
+      <button
+        onclick="openPreviewModal('{{ page.id }}')"
+        class="text-xs px-2 py-1 bg-white border border-blue-200 text-blue-600 rounded hover:bg-blue-100 transition-colors"
+      >
+        Preview
+      </button>
+      <button
+        onclick="deletePage('{{ page.id }}')"
+        class="text-xs px-2 py-1 bg-white border border-red-200 text-red-600 rounded hover:bg-red-50 transition-colors"
+      >
+        Delete
+      </button>
+    </div>
+  </div>
+
+  <script id="preview-data-{{ page.id }}" type="application/json">
+    {
+      "id": "{{ page.id }}",
+      "name": "{{ page.name|escapejs }}",
+      "bot_username": "{{ page.category.bot.bot_username|default:'store_bot'|escapejs }}",
+      "groups": [
+        {% for group in page.groups.all %}
+        {
+          "id": "{{ group.id }}",
+          "name": "{{ group.name|escapejs }}",
+          "contact_bot_username": "{{ group.contact_bot_username|default:''|escapejs }}",
+          "image_url": "{% if group.image %}{{ group.image.url }}{% endif %}",
+          "items": []
+
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }
+  </script>
+
+  <!-- Groups Container -->
+  <div
+    id="groups-container-{{ page.id }}"
+    class="grid grid-rows-[0fr] transition-all duration-300 ease-in-out ml-4"
+  >
+    <div class="overflow-hidden min-h-0 space-y-2">
+      {% for group in page.groups.all %}
+      <div
+        class="bg-white p-3 rounded border border-gray-200 flex items-start gap-3"
+      >
+        {% if group.image %}
+        <img
+          src="{{ group.image.url }}"
+          alt="{{ group.name }}"
+          class="w-12 h-12 object-cover rounded"
+        />
+        {% else %}
+        <div
+          class="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-gray-400"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+            ></path>
+          </svg>
+        </div>
+        {% endif %}
+        <div class="flex-1">
+          <h5 class="font-medium text-gray-900">{{ group.name }}</h5>
+          <p class="text-xs text-gray-500">Group</p>
+        </div>
+
+        </div>
+        <div class="flex flex-col gap-1">
+          <button
+            onclick="openEditGroupModal('{{ group.id }}', '{{ page.id }}')"
+            class="text-blue-500 hover:text-blue-700"
+            title="Edit Group"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              ></path>
+            </svg>
+          </button>
+          <button
+            onclick="deleteGroup('{{ group.id }}')"
+            class="text-red-500 hover:text-red-700"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              ></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>

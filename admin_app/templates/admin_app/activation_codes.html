@@ -1,0 +1,369 @@
+{% comment %} {% extends "admin_app/base_admin.html" %} {% block
+title%}Activation Codes -Admin Panel{% endblock %} {% endcomment %} {% block content %}
+<!-- Code Config for JS -->
+<div
+  id="code-config"
+  data-code-create-url="{% url 'admin_app:create_activation_code' %}"
+  data-code-update-url="{% url 'admin_app:update_activation_code' pk='00000000-0000-0000-0000-000000000000' %}"
+  data-code-delete-url="{% url 'admin_app:delete_activation_code' pk='00000000-0000-0000-0000-000000000000' %}"
+  style="display: none"
+></div>
+
+<!-- Analytics Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+  <!-- Total Codes -->
+  <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-gray-600 text-sm font-medium">Total Codes</h3>
+      <div class="p-2 bg-blue-50 rounded-lg">
+        <svg
+          class="w-6 h-6 text-blue-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+          ></path>
+        </svg>
+      </div>
+    </div>
+    <div class="flex items-baseline">
+      <span class="text-3xl font-bold text-gray-900"
+        >{{ total_codes|default:"0" }}</span
+      >
+      <span class="ml-2 text-sm text-gray-500">codes</span>
+    </div>
+  </div>
+
+  <!-- Used Codes -->
+  <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-gray-600 text-sm font-medium">Used Codes</h3>
+      <div class="p-2 bg-red-50 rounded-lg">
+        <svg
+          class="w-6 h-6 text-red-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          ></path>
+        </svg>
+      </div>
+    </div>
+    <div class="flex items-baseline">
+      <span class="text-3xl font-bold text-gray-900"
+        >{{ used_codes|default:"0" }}</span
+      >
+      <span class="ml-2 text-sm text-gray-500">activated</span>
+    </div>
+  </div>
+
+  <!-- Available Codes -->
+  <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-gray-600 text-sm font-medium">Available Codes</h3>
+      <div class="p-2 bg-green-50 rounded-lg">
+        <svg
+          class="w-6 h-6 text-green-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          ></path>
+        </svg>
+      </div>
+    </div>
+    <div class="flex items-baseline">
+      <span class="text-3xl font-bold text-gray-900"
+        >{{ available_codes|default:"0" }}</span
+      >
+      <span class="ml-2 text-sm text-gray-500">ready to use</span>
+    </div>
+  </div>
+</div>
+
+<div class="mb-8">
+  <div class="mb-8">
+    <div class="flex justify-between items-center">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800">Activation Codes</h2>
+        <p class="text-gray-600">
+          Create and manage subscription activation codes
+        </p>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <form class="flex items-center space-x-2" onsubmit="return false;">
+          <input
+            type="text"
+            name="q"
+            placeholder="Search Code, Plan, or User..."
+            value="{{ search_query }}"
+            class="p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 w-64"
+            hx-get="{% url 'admin_app:activation_codes' %}"
+            hx-trigger="keyup changed delay:500ms, search"
+            hx-target="#codes-table-body"
+            hx-select="#codes-table-body"
+            hx-push-url="true"
+          />
+          {% if search_query %}
+          <a href="." class="p-2 text-sm text-red-600 hover:text-red-700"
+            >Clear</a
+          >
+          {% endif %}
+        </form>
+
+        <button
+          onclick="openAddCodeModal()"
+          class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center"
+        >
+          <svg
+            class="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+            ></path>
+          </svg>
+          Create Code
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% comment %}Start Codes List {% endcomment %}
+<div
+  class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+>
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+      <tr>
+        {% comment %} 1 column {% endcomment %}
+        <th
+          class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+        >
+          Code
+        </th>
+        {% comment %} 2 column {% endcomment %}
+        <th
+          class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+        >
+          Plan
+        </th>
+        {% comment %} 3 column {% endcomment %}
+        <th
+          class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+        >
+          Type
+        </th>
+        {% comment %} 4 column {% endcomment %}
+        <th
+          class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+        >
+          Status
+        </th>
+        {% comment %} 5 column {% endcomment %}
+        <th
+          class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+        >
+          Target User
+        </th>
+        {% comment %} 6 column {% endcomment %}
+        <th
+          class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+        >
+          Used By
+        </th>
+        {% comment %} 7 column {% endcomment %}
+        <th
+          class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+        >
+          Created
+        </th>
+        {% comment %} 8 column {% endcomment %}
+        <th
+          class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+        >
+          Actions ⬅️
+        </th>
+      </tr>
+    </thead>
+    <tbody id="codes-table-body" class="bg-white divide-y divide-gray-200">
+      {% for code in codes %}
+      <tr>
+        {% comment %}Tied to 1 column {% endcomment %}
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="flex items-center">
+            <code class="px-2 py-1 bg-gray-100 rounded text-sm font-mono"
+              >{{ code.code }}</code
+            >
+          </div>
+        </td>
+        {% comment %}Tied to 2 column {% endcomment %}
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span
+            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800"
+          >
+            {{ code.plan_name }}
+          </span>
+        </td>
+        {% comment %}Tied to 3 column {% endcomment %}
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+          {{ code.get_code_type_display }}
+        </td>
+        {% comment %}Tied to 4 column {% endcomment %}
+        <td class="px-6 py-4 whitespace-nowrap">
+          {% if code.is_used %}
+          <span
+            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800"
+          >
+            Used
+          </span>
+          {% else %}
+          <span
+            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800"
+          >
+            Available
+          </span>
+          {% endif %}
+        </td>
+        {% comment %}Tied to 5 column {% endcomment %}
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+          {{ code.target_user.name|default:"-" }}
+        </td>
+        {% comment %}Tied to 6 column {% endcomment %}
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+          {{ code.used_by.name|default:"-" }}
+        </td>
+        {% comment %}Tied to 7 column {% endcomment %}
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+          {{ code.created_at|date:"M d, Y" }}
+        </td>
+
+        {% comment %}Tied to 8 column Actions {% endcomment %}
+        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+          <button
+            onclick="openCodeModal('{{ code.id }}', this)"
+            data-id="{{ code.id }}"
+            data-code="{{ code.code }}"
+            data-plan="{{ code.plan_name }}"
+            data-type="{{ code.code_type }}"
+            data-target-id="{% if code.target_user %}{{ code.target_user.id }}{% endif %}"
+            data-expires="{{ code.expires_at|date:'Y-m-d\TH:i'|default:'' }}"
+            class="text-blue-600 hover:text-blue-900 hover:bg-blue-50 p-2 rounded-lg transition-colors cursor-pointer mx-1"
+            title="Edit activation code"
+            {%
+            if
+            code.is_used
+            %}disabled
+            style="opacity: 0.5; cursor: not-allowed"
+            {%
+            endif
+            %}
+          >
+            <i class="fas fa-edit"></i>
+          </button>
+
+          <button
+            hx-post="{% url 'admin_app:delete_activation_code' code.id %}"
+            hx-confirm="Are you sure you want to delete code: {{ code.code }}?"
+            hx-target="closest tr"
+            hx-swap="outerHTML swap:1s"
+            class="text-red-600 hover:text-red-900 hover:bg-red-50 p-2 rounded-lg transition-colors cursor-pointer mx-1"
+            title="Delete activation code"
+            {%
+            if
+            code.is_used
+            %}disabled
+            style="opacity: 0.5; cursor: not-allowed"
+            {%
+            endif
+            %}
+          >
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8" class="px-6 py-8 text-center text-gray-500">
+          No activation codes yet.
+          <a
+            onclick="openAddCodeModal()"
+            class="text-primary-600 hover:text-primary-700 cursor-pointer"
+            >Create one</a
+          >
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% comment %} End Codes List {% endcomment %} {% comment %} End Codes List
+{%endcomment %}
+
+<div class="flex justify-between items-center mt-4">
+  <div class="text-sm text-gray-700">
+    Showing {{ codes.start_index }} to {{ codes.end_index }} of {{
+    codes.paginator.count }} codes
+  </div>
+
+  <div class="flex items-center space-x-2">
+    {% if codes.has_previous %}
+    <a
+      href="?code_page={{ codes.previous_page_number }}"
+      class="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+    >
+      &laquo; Previous
+    </a>
+    {% else %}
+    <span
+      class="px-3 py-1 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed"
+    >
+      &laquo; Previous
+    </span>
+    {% endif %}
+
+    <span class="text-sm text-gray-600">
+      Page {{ codes.number }} of {{ codes.paginator.num_pages }}
+    </span>
+
+    {% if codes.has_next %}
+    <a
+      href="?code_page={{ codes.next_page_number }}"
+      class="px-3 py-1 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+    >
+      Next &raquo;
+    </a>
+    {% else %}
+    <span
+      class="px-3 py-1 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed"
+    >
+      Next &raquo;
+    </span>
+    {% endif %}
+  </div>
+</div>
+{% comment %} Start Create Code Modal {% endcomment %} {% comment%}StartCreateCode Modal {% endcomment %}
+{%include "admin_app/activation_code_create.html" %} {% comment %} End Create
+CodeModal%endcomment {% endcomment %} {% endblock %}

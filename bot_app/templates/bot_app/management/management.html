@@ -1,0 +1,1077 @@
+{% extends "owner/base.html" %} {% load static %} {% block extra_head %}
+<!-- jQuery for modal functionality -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<link rel="stylesheet" href="{% static 'bot_app/css/management.css' %}" />
+{% endblock %} {% block content %}
+<!-- Management Config for JS -->
+<div
+  id="management-config"
+  data-category-create-url="{% url 'bot_app:category_create' %}"
+  data-category-update-url="{% url 'bot_app:category_update' pk='00000000-0000-0000-0000-000000000000' %}"
+  data-category-delete-url="{% url 'bot_app:category_delete' pk='00000000-0000-0000-0000-000000000000' %}"
+  data-faq-create-url="{% url 'bot_app:faq_create' %}"
+  data-faq-update-url="{% url 'bot_app:faq_update' pk='00000000-0000-0000-0000-000000000000' %}"
+  data-faq-delete-url="{% url 'bot_app:faq_delete' faq_id='00000000-0000-0000-0000-000000000000' %}"
+  data-faq-detail-url="{% url 'bot_app:faq_detail' pk='00000000-0000-0000-0000-000000000000' %}"
+  data-faq-list-partial-url="{% url 'bot_app:faq_list_by_category_partial' category_id='00000000-0000-0000-0000-000000000000' %}"
+  data-toggle-faq-status-url="{% url 'bot_app:toggle_faq_status' faq_id='00000000-0000-0000-0000-000000000000' %}"
+  data-update-keyboard-type-url="{% url 'bot_app:update_keyboard_type' %}"
+  data-page-create-url="{% url 'bot_app:page_create' %}"
+  data-page-update-url="{% url 'bot_app:page_update' pk='00000000-0000-0000-0000-000000000000' %}"
+  data-page-delete-url="{% url 'bot_app:page_delete' pk='00000000-0000-0000-0000-000000000000' %}"
+  data-group-create-url="{% url 'bot_app:group_create' %}"
+  data-group-update-url="{% url 'bot_app:group_update' pk='00000000-0000-0000-0000-000000000000' %}"
+  data-group-detail-url="{% url 'bot_app:group_detail' pk='00000000-0000-0000-0000-000000000000' %}"
+  data-group-delete-url="{% url 'bot_app:group_delete' pk='00000000-0000-0000-0000-000000000000' %}"
+  data-get-attachments-url="{% url 'bot_app:get_attachments' %}"
+  style="display: none"
+></div>
+
+<!-- Bot Selector -->
+{% include "bot_app/components/bot_selector.html" %}
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Left Column: Categories List (2/3 width) -->
+  <div class="lg:col-span-2">
+    <!-- Page Header -->
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">Categories</h1>
+      <p class="text-gray-600 mt-1">Organize your bot content structure</p>
+    </div>
+    {% comment %} Start Search {% endcomment %}
+    <!-- Actions Bar -->
+    <div class="mb-6 flex items-center gap-4">
+      <!-- Search Bar -->
+      <div class="flex-1">
+        <form
+          method="GET"
+          action="{% url 'bot_app:bot_manage' %}"
+          class="relative"
+        >
+          {% if selected_bot %}
+          <input type="hidden" name="bot_id" value="{{ selected_bot.id }}" />
+          <input type="hidden" id="currentBotId" value="{{ selected_bot.id }}" />
+          {% endif %}
+          <input
+            type="text"
+            name="q"
+            value="{{ q|default:'' }}"
+            placeholder="Search categories..."
+            class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          />
+          <svg
+            class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            ></path>
+          </svg>
+        </form>
+      </div>
+
+      <!-- Add Category Button -->
+      <button
+        onclick="openAddCategoryModal()"
+        class="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors flex items-center gap-2 whitespace-nowrap"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4v16m8-8H4"
+          ></path>
+        </svg>
+        Add Category
+      </button>
+    </div>
+    {% comment %} Ebd Search {% endcomment %} {% comment %} Down here Add
+    Category Button Duplicated {% endcomment %}
+    <!-- Actions Bar -->
+    {% comment %}
+    <div class="mb-6">
+      <button
+        onclick="openAddCategoryModal()"
+        class="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors flex items-center gap-2"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4v16m8-8H4"
+          ></path>
+        </svg>
+        Add Category
+      </button>
+    </div>
+    {% endcomment %}
+
+    <!-- Categories Grid -->
+    <div class="space-y-4">
+      {% for category in categories %}
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-start justify-between">
+          <div class="flex items-start gap-4 flex-1">
+            <!-- Icon -->
+            <div class="p-3 bg-blue-50 rounded-lg">
+              <svg
+                class="w-6 h-6 text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                ></path>
+              </svg>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1">
+              <h3 class="text-lg font-bold text-gray-900">
+                {{ category.name }}
+              </h3>
+              <p class="text-sm text-gray-500 mt-1">
+                {{ category.subcategories.count }} subcategories • {{
+                category.faqs.count }} FAQs
+              </p>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center gap-2">
+            <button
+              onclick="openViewModal('{{ category.id }}', '{{ category.name|escapejs }}')"
+              class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+            >
+              <svg
+                class="w-4 h-4 inline mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                ></path>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                ></path>
+              </svg>
+              View Tree
+            </button>
+
+            <button
+              onclick="openEditCategoryModal('{{ category.id }}', '{{ category.name|escapejs }}')"
+              class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                ></path>
+              </svg>
+            </button>
+
+            <button
+              onclick="openDeleteConfirmModal('{{ category.id }}', '{{ category.name|escapejs }}')"
+              class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                ></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+        <svg
+          class="w-16 h-16 mx-auto mb-4 text-gray-300"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+          ></path>
+        </svg>
+        <p class="text-lg font-medium text-gray-900">No categories yet</p>
+        <p class="text-sm text-gray-500 mt-1">
+          Create your first category to get started
+        </p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="mt-6 flex justify-center items-center gap-3">
+      {% if page_obj.has_previous %}
+      <a
+        href="?page={{ page_obj.previous_page_number }}"
+        class="px-3 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+      >
+        Previous
+      </a>
+      {% else %}
+      <button
+        disabled
+        class="px-3 py-2 text-sm bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed"
+      >
+        Previous
+      </button>
+      {% endif %}
+
+      <span class="px-3 py-2 text-sm text-gray-700">
+        Page {{ page_obj.number }} of {{ paginator.num_pages }}
+      </span>
+
+      {% if page_obj.has_next %}
+      <a
+        href="?page={{ page_obj.next_page_number }}"
+        class="px-3 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+      >
+        Next
+      </a>
+      {% else %}
+      <button
+        disabled
+        class="px-3 py-2 text-sm bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed"
+      >
+        Next
+      </button>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Right Column: Live Preview (1/3 width) -->
+  <div class="lg:col-span-1">
+    <div class="sticky top-6">
+      <div
+        class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+      >
+        <!-- Preview Header -->
+        <div class="bg-primary-500 px-4 py-3 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div
+              class="w-8 h-8 bg-white rounded-full flex items-center justify-center"
+            >
+              <svg
+                class="w-5 h-5 text-primary-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                ></path>
+              </svg>
+            </div>
+            <div>
+              <p class="text-white text-sm font-medium">Support Bot</p>
+              <p class="text-blue-100 text-xs">online</p>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center"
+        >
+          <div>
+            <h3
+              class="text-sm font-semibold text-gray-700 flex items-center gap-2"
+            >
+              <span
+                class="w-2 h-2 bg-green-500 rounded-full animate-pulse"
+              ></span>
+              Live Preview
+            </h3>
+            <p class="text-xs text-gray-500 mt-1">
+              See how your bot appears to users
+              <!-- DEBUG: Server says: {{ bot.home_keyboard_type }} -->
+            </p>
+          </div>
+          </div>
+          <div class="flex items-center gap-3 bg-gray-100 p-2 rounded-lg">
+            <span class="text-sm font-medium text-gray-700">Keyboard Type:</span>
+            <div class="flex gap-2">
+              <button
+                onclick="togglePreviewStyle('INLINE')"
+                id="btn-style-inline"
+                class="px-4 py-2 text-sm font-medium rounded-md transition-all {% if bot.home_keyboard_type == 'INLINE' %}bg-blue-500 text-white hover:bg-blue-600 shadow-sm{% else %}bg-white text-gray-900 shadow-sm border border-gray-200 hover:bg-gray-50{% endif %}"
+              >
+                Inline Keyboard
+              </button>
+              <button
+                onclick="togglePreviewStyle('REPLY')"
+                id="btn-style-reply"
+                class="px-4 py-2 text-sm font-medium rounded-md transition-all {% if bot.home_keyboard_type == 'REPLY' %}bg-blue-500 text-white hover:bg-blue-600 shadow-sm{% else %}bg-white text-gray-900 shadow-sm border border-gray-200 hover:bg-gray-50{% endif %}"
+              >
+                Reply Keyboard
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bot Chat Interface -->
+        <div
+          class="p-4 space-y-3 bg-gradient-to-b from-white to-gray-50 min-h-[400px]"
+        >
+          <!-- Bot Welcome Message -->
+          <div class="flex items-start gap-2">
+            <div
+              class="flex-shrink-0 w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center"
+            >
+              <svg
+                class="w-4 h-4 text-primary-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                ></path>
+              </svg>
+            </div>
+            <div
+              class="bg-white border border-gray-200 rounded-lg rounded-tl-none p-3 max-w-[85%] shadow-sm"
+            >
+              <p class="text-sm text-gray-800">
+                👋 Welcome! I'm here to help you find answers. Browse categories
+                below or ask me anything!
+              </p>
+            </div>
+          </div>
+
+          <!-- Browse FAQs Button -->
+          <div class="flex justify-center">
+            <button
+              class="px-4 py-2 bg-primary-500 text-white rounded-lg text-sm font-medium hover:bg-primary-600 transition-colors"
+            >
+              📚 Browse FAQs
+            </button>
+          </div>
+
+          <!-- Category Selection Prompt -->
+
+          <!-- Inline Buttons Container -->
+          <div id="inlineButtonsContainer" class="space-y-2 px-4 pb-4">
+             <!-- Buttons will be injected here via JS -->
+          </div>
+
+          <!-- Reply Keyboard Container (Hidden by default) -->
+          <div
+            id="replyKeyboardContainer"
+            class="hidden bg-gray-100 p-2 grid grid-cols-2 gap-2 border-t border-gray-200"
+          >
+            <!-- Buttons will be moved here via JS -->
+          </div>
+
+          <!-- Input Area -->
+          <div class="border-t border-gray-200 p-3 bg-white">
+            <div class="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="Type a message..."
+                class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                disabled
+              />
+              <button
+                class="p-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                disabled
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Category Modal -->
+  <div
+    id="categoryModal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden z-[60] flex items-center justify-center p-4"
+  >
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+      <div
+        class="flex items-center justify-between p-6 border-b border-gray-200"
+      >
+        <h3 class="text-xl font-bold text-gray-900" id="categoryModalLabel">
+          Add Category
+        </h3>
+        <button
+          type="button"
+          onclick="closeCategoryModal()"
+          class="text-gray-400 hover:text-gray-600"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+      </div>
+      <form id="categoryForm">
+        <div class="p-6">
+          <input type="hidden" id="categoryId" name="category_id" />
+          <div>
+            <label
+              for="categoryName"
+              class="block text-sm font-medium text-gray-700 mb-2"
+              >Category Name</label
+            >
+            <input
+              type="text"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              id="categoryName"
+              name="name"
+              required
+            />
+          </div>
+
+        </div>
+        <div
+          class="flex items-center justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-xl"
+        >
+          <button
+            type="button"
+            onclick="closeCategoryModal()"
+            class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+          >
+            Save Category
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div
+    id="deleteModal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden z-[60] flex items-center justify-center p-4"
+  >
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+      <div
+        class="flex items-center justify-between p-6 bg-red-500 text-white rounded-t-xl"
+      >
+        <h3 class="text-xl font-bold">Confirm Delete</h3>
+        <button
+          type="button"
+          onclick="closeDeleteModal()"
+          class="text-white hover:text-red-100"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+      </div>
+      <div class="p-6">
+        <p class="text-gray-900 mb-2">
+          Are you sure you want to delete the category
+          <strong id="deleteCategoryName"></strong>?
+        </p>
+        <p class="text-sm text-gray-500">
+          This action cannot be undone. All subcategories and FAQs will also be
+          deleted.
+        </p>
+      </div>
+      <div
+        class="flex items-center justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-xl"
+      >
+        <button
+          type="button"
+          onclick="closeDeleteModal()"
+          class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          id="confirmDeleteBtn"
+          class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+        >
+          Delete Category
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Tree Modal -->
+  <div
+    id="viewModal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4"
+  >
+    <div
+      class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col"
+    >
+      <div
+        class="flex items-center justify-between p-6 border-b border-gray-200"
+      >
+        <h3 class="text-xl font-bold text-gray-900" id="viewModalTitle">
+          Category Tree
+        </h3>
+        <button
+          type="button"
+          onclick="closeViewModal()"
+          class="text-gray-400 hover:text-gray-600"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto flex-1" id="viewModalContent">
+        <div class="text-center text-gray-500 py-10">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit FAQ Modal -->
+  <div
+    id="faqModal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden z-[60] flex items-center justify-center p-4"
+  >
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full">
+      <div
+        class="flex items-center justify-between p-6 border-b border-gray-200"
+      >
+        <h3 class="text-xl font-bold text-gray-900" id="faqModalLabel">
+          Add FAQ
+        </h3>
+        <button
+          type="button"
+          onclick="closeFaqModal()"
+          class="text-gray-400 hover:text-gray-600"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+      </div>
+      <form id="faqForm">
+        <div class="p-6 space-y-4">
+          <input type="hidden" id="faqId" name="faq_id" />
+          <input type="hidden" id="faqCategoryId" name="category_id" />
+
+          <div>
+            <label
+              for="faqQuestion"
+              class="block text-sm font-medium text-gray-700 mb-2"
+              >Question</label
+            >
+            <textarea
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              id="faqQuestion"
+              name="question"
+              rows="3"
+              required
+            ></textarea>
+          </div>
+
+          <div>
+            <label
+              for="faqAnswer"
+              class="block text-sm font-medium text-gray-700 mb-2"
+              >Answer</label
+            >
+            <textarea
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              id="faqAnswer"
+              name="answer"
+              rows="5"
+            ></textarea>
+          </div>
+
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              id="faqIsActive"
+              name="is_active"
+              class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+              checked
+            />
+            <label for="faqIsActive" class="ml-2 text-sm text-gray-700"
+              >Active (show in bot)</label
+            >
+          </div>
+        </div>
+        <div
+          class="flex items-center justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-xl"
+        >
+          <button
+            type="button"
+            onclick="closeFaqModal()"
+            class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Save FAQ
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Subcategory Modal (reuses category modal logic but with parent_id) -->
+  <div
+    id="subcategoryModal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden z-[60] flex items-center justify-center p-4"
+  >
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+      <div
+        class="flex items-center justify-between p-6 border-b border-gray-200"
+      >
+        <h3 class="text-xl font-bold text-gray-900" id="subcategoryModalLabel">
+          Add Subcategory
+        </h3>
+        <button
+          type="button"
+          onclick="closeSubcategoryModal()"
+          class="text-gray-400 hover:text-gray-600"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+      </div>
+      <form id="subcategoryForm">
+        <div class="p-6">
+          <input type="hidden" id="subcategoryParentId" name="parent_id" />
+          <div>
+            <label
+              for="subcategoryName"
+              class="block text-sm font-medium text-gray-700 mb-2"
+              >Subcategory Name</label
+            >
+            <input
+              type="text"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              id="subcategoryName"
+              name="name"
+              required
+            />
+          </div>
+        </div>
+        <div
+          class="flex items-center justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-xl"
+        >
+          <button
+            type="button"
+            onclick="closeSubcategoryModal()"
+            class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            Save Subcategory
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete FAQ Confirmation Modal -->
+  <div
+    id="deleteFaqModal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden z-[60] flex items-center justify-center p-4"
+  >
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+      <div
+        class="flex items-center justify-between p-6 bg-red-500 text-white rounded-t-xl"
+      >
+        <h3 class="text-xl font-bold">Delete FAQ</h3>
+        <button
+          type="button"
+          onclick="hideModal('deleteFaqModal')"
+          class="text-white hover:text-red-100"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+      </div>
+      <div class="p-6">
+        <p class="text-gray-900 mb-2">
+          Are you sure you want to delete <strong id="deleteFaqName"></strong>?
+        </p>
+        <p class="text-sm text-gray-500">This action cannot be undone.</p>
+      </div>
+      <div
+        class="flex items-center justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-xl"
+      >
+        <button
+          type="button"
+          onclick="hideModal('deleteFaqModal')"
+          class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          id="confirmDeleteFaqBtn"
+          class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+        >
+          Delete FAQ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Page Modal -->
+  <div id="deletePageModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-[60] flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+      <div class="flex items-center justify-between p-6 bg-red-500 text-white rounded-t-xl">
+        <h3 class="text-xl font-bold">Delete Page</h3>
+        <button type="button" onclick="hideModal('deletePageModal')" class="text-white hover:text-red-100">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <div class="p-6">
+        <p class="text-gray-900 mb-2">Are you sure you want to delete <strong id="deletePageName"></strong>?</p>
+        <p class="text-sm text-gray-500">This action cannot be undone. All groups and items within this page will be permanently deleted.</p>
+      </div>
+      <div class="flex items-center justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-xl">
+        <button type="button" onclick="hideModal('deletePageModal')" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+        <button type="button" id="confirmDeletePageBtn" onclick="confirmDeletePage()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">Delete Page</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Group Modal -->
+  <div id="deleteGroupModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-[60] flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+      <div class="flex items-center justify-between p-6 bg-red-500 text-white rounded-t-xl">
+        <h3 class="text-xl font-bold">Delete Group</h3>
+        <button type="button" onclick="hideModal('deleteGroupModal')" class="text-white hover:text-red-100">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <div class="p-6">
+        <p class="text-gray-900 mb-2">Are you sure you want to delete <strong id="deleteGroupName"></strong>?</p>
+        <p class="text-sm text-gray-500">This action cannot be undone. All items within this group will be permanently deleted.</p>
+      </div>
+      <div class="flex items-center justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-xl">
+        <button type="button" onclick="hideModal('deleteGroupModal')" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+        <button type="button" id="confirmDeleteGroupBtn" onclick="confirmDeleteGroup()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">Delete Group</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Page Modal -->
+  <div id="pageModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-[60] flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+      <div class="flex items-center justify-between p-6 border-b border-gray-200">
+        <h3 class="text-xl font-bold text-gray-900" id="pageModalLabel">Add Page</h3>
+        <button type="button" onclick="closePageModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <form id="pageForm" class="p-6">
+        <input type="hidden" id="pageId" />
+        <input type="hidden" id="pageCategoryId" />
+        
+        <div class="mb-6">
+          <label for="pageName" class="block text-sm font-medium text-gray-700 mb-2">Page Name</label>
+          <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" id="pageName" placeholder="Enter page name..." required />
+        </div>
+
+        <div class="flex items-center justify-end gap-3">
+          <button type="button" onclick="closePageModal()" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Save Page</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Group Modal -->
+  <div id="groupModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-[60] flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between p-6 border-b border-gray-200">
+        <h3 class="text-xl font-bold text-gray-900">Add New Group</h3>
+        <button type="button" onclick="closeGroupModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <form id="groupForm" class="flex flex-col flex-1 overflow-hidden">
+        <div class="p-6 overflow-y-auto flex-1 space-y-6">
+          <input type="hidden" id="groupPageId" name="page_id" />
+          <input type="hidden" id="groupId" name="group_id" />
+          
+          <!-- Group Name -->
+          <div>
+            <label for="groupName" class="block text-sm font-medium text-gray-700 mb-2">Group Name</label>
+            <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" id="groupName" name="name" placeholder="Enter group name..." required />
+          </div>
+
+          <!-- Contact Bot Username -->
+          <div>
+            <label for="groupBotUsername" class="block text-sm font-medium text-gray-700 mb-2">Contact Bot Username (Optional)</label>
+            <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" id="groupBotUsername" name="contact_bot_username" placeholder="e.g. my_support_bot" />
+            <p class="mt-1 text-xs text-gray-500">Overrides the page's default bot for the "Contact Store" button.</p>
+          </div>
+
+          <!-- Group Image -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Group Image</label>
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary-500 transition-colors cursor-pointer" onclick="document.getElementById('groupImage').click()">
+              <input type="file" id="groupImage" name="image" class="hidden" accept="image/*" onchange="previewGroupImage(this)" />
+              <div id="groupImagePreview" class="hidden mb-2">
+                <img src="" alt="Preview" class="mx-auto h-32 object-contain" />
+              </div>
+              <div id="groupImagePlaceholder">
+                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                  <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <p class="mt-1 text-sm text-gray-600">Click to upload image</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Attachments Selection -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Select Attachments</label>
+            
+            <!-- Tabs -->
+            <div class="flex gap-2 mb-4 bg-gray-100 p-1 rounded-lg">
+              <button type="button" onclick="switchAttachmentTab('general')" id="tab-general" class="flex-1 px-4 py-2 text-sm font-medium rounded-md bg-white text-gray-900 shadow-sm transition-all">
+                📄 General
+              </button>
+              <button type="button" onclick="switchAttachmentTab('medicines')" id="tab-medicines" class="flex-1 px-4 py-2 text-sm font-medium rounded-md text-gray-500 hover:text-gray-900 transition-all">
+                💊 Medicines
+              </button>
+            </div>
+
+            <!-- Search -->
+            <div class="relative mb-4">
+              <input type="text" id="attachmentSearch" placeholder="Search attachments..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent" onkeyup="filterAttachments()" />
+              <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+
+            <!-- List Container -->
+            <div class="border border-gray-200 rounded-lg h-48 overflow-y-auto p-2 space-y-2" id="attachmentsList">
+              <!-- Items will be injected here via JS -->
+              <div class="text-center text-gray-500 py-8">Loading attachments...</div>
+            </div>
+          </div>
+
+          <!-- Selected Attachments Preview -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Selected Attachments (<span id="selectedCount">0</span>)</label>
+            <div id="selectedAttachments" class="border border-gray-200 rounded-lg p-4 min-h-[60px] flex flex-wrap gap-2 bg-gray-50">
+               <p class="text-sm text-gray-400 w-full text-center py-2">No attachments selected yet</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-xl">
+          <button type="button" onclick="closeGroupModal()" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">Create Group</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Preview Modal -->
+  <div id="previewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-[70] flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl w-[375px] h-[667px] flex flex-col overflow-hidden relative transform transition-all">
+      <!-- Header -->
+      <div class="bg-white border-b border-gray-200 p-4 flex items-center justify-between z-10 shadow-sm">
+         <div class="flex items-center gap-2 overflow-hidden">
+            <button id="previewBackBtn" onclick="handlePreviewBack()" class="hidden text-gray-600 hover:text-gray-900 p-1 rounded-full hover:bg-gray-100 transition-colors">
+               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            </button>
+            <div class="flex flex-col overflow-hidden">
+                <h3 id="previewTitle" class="font-bold text-gray-900 truncate text-lg leading-tight">Page Name</h3>
+                <span class="text-xs text-gray-400 font-medium">Mini App Preview</span>
+            </div>
+         </div>
+         <button onclick="closePreviewModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+         </button>
+      </div>
+  
+      <!-- Content Area -->
+      <div id="previewContent" class="flex-1 overflow-y-auto bg-gray-50 p-4 relative scrollbar-hide">
+         <!-- Dynamic Content -->
+      </div>
+  
+      <!-- Footer -->
+      <div class="bg-white border-t border-gray-200 p-3 text-center text-xs text-gray-400 font-medium">
+         Preview Mode • Tap items to navigate
+      </div>
+    </div>
+  </div>
+
+  <script src="{% static 'bot_app/js/management.js' %}?v=2"></script>
+  <script>
+    // Initialize management.js with URLs from config
+    const mgmtConfig = document.getElementById("management-config");
+    initializeManagementJS({
+      categoryCreate: mgmtConfig.dataset.categoryCreateUrl,
+      categoryUpdate: mgmtConfig.dataset.categoryUpdateUrl,
+      categoryDelete: mgmtConfig.dataset.categoryDeleteUrl,
+      faqCreate: mgmtConfig.dataset.faqCreateUrl,
+      faqUpdate: mgmtConfig.dataset.faqUpdateUrl,
+      faqDelete: mgmtConfig.dataset.faqDeleteUrl,
+      faqDetail: mgmtConfig.dataset.faqDetailUrl,
+      faqListPartial: mgmtConfig.dataset.faqListPartialUrl,
+      toggleFaqStatus: mgmtConfig.dataset.toggleFaqStatusUrl,
+      updateKeyboardType: mgmtConfig.dataset.updateKeyboardTypeUrl,
+      pageCreate: mgmtConfig.dataset.pageCreateUrl,
+      pageUpdate: mgmtConfig.dataset.pageUpdateUrl,
+      pageDelete: mgmtConfig.dataset.pageDeleteUrl,
+      groupCreate: mgmtConfig.dataset.groupCreateUrl,
+      groupUpdate: mgmtConfig.dataset.groupUpdateUrl,
+      groupDetail: mgmtConfig.dataset.groupDetailUrl,
+      groupDelete: mgmtConfig.dataset.groupDeleteUrl,
+      getAttachments: mgmtConfig.dataset.getAttachmentsUrl,
+    });
+
+    // Initialize preview style based on server-rendered selection
+    // Initialize preview style based on server-rendered selection
+    // We don't need to call togglePreviewStyle here because the HTML template
+    // already renders the correct button states and the content is static initially.
+    // However, we DO need to ensure the correct container is shown/hidden.
+    const initialStyle = "{{ bot.home_keyboard_type }}";
+    togglePreviewStyle(initialStyle, false); // false = don't save on init
+  </script>
+  {% endblock %}
+</div>

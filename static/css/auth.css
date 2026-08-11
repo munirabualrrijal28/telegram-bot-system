@@ -1,0 +1,34 @@
+.auth-card-wrapper {
+  max-width: 480px;
+  width: 100%;
+}
+
+.auth-container {
+  position: relative;
+  width: 100%;
+  height: 650px; /* Fixed height */
+  overflow: hidden;
+  background: white;
+  border-radius: 0.75rem;
+}
+
+.auth-forms-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  width: 200%;
+  height: 100%;
+}
+
+.auth-form {
+  width: 50%;
+  height: 100%;
+  flex-shrink: 0;
+  overflow-y: auto; /* Enable scrolling within the form if needed */
+}
+
+.show-signup .auth-forms-wrapper {
+  transform: translateX(-50%);
+}

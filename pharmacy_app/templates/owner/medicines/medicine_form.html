@@ -1,0 +1,181 @@
+{% extends "owner/base.html" %}
+{% block title %}Medicine{% endblock %}
+{% block content %}
+<h2>{{ form.instance.pk|yesno:"Edit Medicine,Add Medicine" }}</h2>
+
+<form id="medicine-form" method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+
+  <div class="mb-3">
+    <label class="form-label">Name</label>
+    {{ form.name }}
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Brand</label>
+    {{ form.brand }}
+  </div>
+  <div class="mb-3">
+    <label class="form-label">SKU</label>
+    {{ form.sku }}
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Description</label>
+    {{ form.description }}
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Dosage Form</label>
+    {{ form.dosage_form }}
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Strength</label>
+    {{ form.strength }}
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Price</label>
+    {{ form.price }}
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Stock Quantity</label>
+    {{ form.stock_quantity }}
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Low Stock Threshold</label>
+    {{ form.low_stock_threshold }}
+  </div>
+
+  <!-- Hidden to carry filename (temp or final) -->
+  <input type="hidden" name="uploaded_file" id="uploaded_file" value="{{ existing_image_name|default:'' }}">
+
+
+
+
+
+  <!-- File input -->
+  <div class="mb-3">
+    <label class="form-label">Medicine Image</label>
+    <input type="file" name="file" id="imageInput" />
+
+    <!-- Show existing preview if editing -->
+    {% if existing_image_url %}
+    <div id="existing-preview" style="margin-top:8px;">
+      <img src="{{ existing_image_url }}" alt="Current image" style="max-height:120px;">
+    </div>
+    {% else %}
+    <div id="existing-preview" style="display:none;"></div>
+    {% endif %}
+  </div>
+
+
+
+
+  <!-- <button id="saveBtn" class="btn btn-success" disabled>Save</button>
+  <a href="{% url 'pharmacy_app:medicines_list' %}" class="btn btn-secondary">Cancel</a> -->
+
+  <button id="saveBtn" class="btn btn-success" disabled>Save</button>
+  <a href="{% url 'pharmacy_app:medicines_list' %}" id="cancelBtn" class="btn btn-secondary">Cancel</a>
+
+</form>
+
+<script>
+  FilePond.registerPlugin(FilePondPluginImagePreview, FilePondPluginFileValidateType);
+
+  const saveBtn = document.getElementById("saveBtn");
+  const uploadedFileInput = document.getElementById("uploaded_file");
+  let tempFileId = null;
+
+  const pond = FilePond.create(document.querySelector('#imageInput'), {
+    acceptedFileTypes: ['image/*'],
+    allowMultiple: false,
+    instantUpload: true,
+    server: {
+      process: {
+        url: "{% url 'pharmacy_app:upload_temp_image' %}",
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+        onload: (responseText) => {
+          tempFileId = responseText;
+          uploadedFileInput.value = tempFileId;
+          saveBtn.disabled = false;
+          return tempFileId;
+        },
+        onerror: () => {
+          alert("Upload failed");
+          saveBtn.disabled = false;
+        }
+      },
+      revert: {
+        url: "{% url 'pharmacy_app:upload_temp_image' %}",
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+        onload: () => {
+          tempFileId = null;
+          uploadedFileInput.value = "";
+          saveBtn.disabled = false;
+        }
+      }
+    }
+  });
+
+  // 
+  const cancelBtn = document.getElementById("cancelBtn");
+
+  // Handle cancel: cleanup temp image if exists
+  // cancelBtn.addEventListener("click", function (e) {
+  //   if (tempFileId) {
+  //     pond.removeFile();   // this triggers revert → temp file deleted
+  //     tempFileId = null;
+  //   }
+  // });
+
+
+// cancelBtn.addEventListener("click", function () {
+//   if (tempFileId) {
+//     try {
+//       // 🟢 This triggers exactly the same logic as "tap to undo"
+//       pond.removeFile();
+//       tempFileId = null;
+//       uploadedFileInput.value = "";
+//     } catch (err) {
+//       console.warn("Cancel cleanup failed", err);
+//     }
+//   }
+//   // Do NOT prevent default → Cancel will navigate normally
+// });
+  // 
+
+
+cancelBtn.addEventListener("click", function (e) {
+  if (tempFileId) {
+    e.preventDefault(); // stop instant navigation
+
+    pond.removeFile(); // triggers revert → server deletes temp
+
+    // Wait a short delay (e.g. 800ms) then navigate
+    setTimeout(() => {
+      tempFileId = null;
+      uploadedFileInput.value = "";
+      window.location.href = cancelBtn.href;
+    }, 800);
+  }
+  // else → no temp file, normal navigation
+});
+
+  // 🟢 Cleanup temp file if user leaves page without saving
+  window.addEventListener("beforeunload", function () {
+    if (tempFileId) {
+
+      navigator.sendBeacon("{% url 'pharmacy_app:upload_temp_image' %}", tempFileId);
+
+    }
+  });
+  // 🟢 Enable Save only if something changes
+  document.querySelectorAll('#medicine-form input, #medicine-form textarea, #medicine-form select').forEach(el => {
+    el.addEventListener('change', () => saveBtn.disabled = false);
+  });
+
+
+</script>
+
+
+
+{% endblock %}

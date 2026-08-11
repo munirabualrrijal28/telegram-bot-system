@@ -1,0 +1,122 @@
+# AWS Elastic Beanstalk - Environment Variables Setup Commands
+
+# IMPORTANT: Replace the placeholder values with your actual credentials before running!
+
+# ============================================================
+# Step 1: Generate a new SECRET_KEY
+# ============================================================
+# Run this in Python to generate a new secret key:
+#   python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+
+
+# ============================================================
+# Step 2: Set Environment Variables (REQUIRED)
+# ============================================================
+
+# Method A: Set all variables in one command (recommended)
+# Copy this template, replace placeholders, then run:
+
+eb setenv \
+  SECRET_KEY="your-generated-secret-key-here" \
+  DEBUG="False" \
+  ALLOWED_HOSTS=".elasticbeanstalk.com,.mytelebot.com" \
+  USE_S3="True" \
+  AWS_ACCESS_KEY_ID="your-aws-access-key" \
+  AWS_SECRET_ACCESS_KEY="your-aws-secret-key" \
+  AWS_STORAGE_BUCKET_NAME="your-s3-bucket-name" \
+  AWS_S3_REGION_NAME="us-east-1" \
+  GOOGLE_OAUTH_CLIENT_ID="your-google-client-id" \
+  GOOGLE_OAUTH_CLIENT_SECRET="your-google-client-secret" \
+  CSRF_TRUSTED_ORIGINS="https://your-app-name.elasticbeanstalk.com,https://yourdomain.com"
+
+
+# Method B: Set variables individually (alternative)
+# -------------------------------------------------------
+
+# Django Core Settings
+eb setenv SECRET_KEY="your-generated-secret-key-here"
+eb setenv DEBUG="False"
+eb setenv ALLOWED_HOSTS=".elasticbeanstalk.com,.mytelebot.com"
+
+# AWS S3 Configuration
+eb setenv USE_S3="True"
+eb setenv AWS_ACCESS_KEY_ID="your-aws-access-key"
+eb setenv AWS_SECRET_ACCESS_KEY="your-aws-secret-key"
+eb setenv AWS_STORAGE_BUCKET_NAME="your-s3-bucket-name"
+eb setenv AWS_S3_REGION_NAME="us-east-1"
+
+# Google OAuth
+eb setenv GOOGLE_OAUTH_CLIENT_ID="your-google-client-id"
+eb setenv GOOGLE_OAUTH_CLIENT_SECRET="your-google-client-secret"
+
+# Security
+eb setenv CSRF_TRUSTED_ORIGINS="https://your-app-name.elasticbeanstalk.com,https://yourdomain.com"
+
+
+# ============================================================
+# Step 3: RDS Database Configuration (if attaching RDS)
+# ============================================================
+# If you attach RDS through EB console or CLI, these are set automatically:
+#   - RDS_DB_NAME
+#   - RDS_USERNAME
+#   - RDS_PASSWORD
+#   - RDS_HOSTNAME
+#   - RDS_PORT
+
+# If you're using external RDS, set them manually:
+# eb setenv RDS_DB_NAME="your_db_name"
+# eb setenv RDS_USERNAME="your_db_user"
+# eb setenv RDS_PASSWORD="your_db_password"
+# eb setenv RDS_HOSTNAME="your-rds-endpoint.rds.amazonaws.com"
+# eb setenv RDS_PORT="5432"
+
+
+# ============================================================
+# Step 4: Optional - Superuser Creation
+# ============================================================
+# If you want the superuser to be created automatically:
+eb setenv DJANGO_SUPERUSER_USERNAME="admin"
+eb setenv DJANGO_SUPERUSER_EMAIL="admin@yourdomain.com"
+eb setenv DJANGO_SUPERUSER_PASSWORD="secure-password-here"
+
+
+# ============================================================
+# Step 5: Verify Environment Variables
+# ============================================================
+# List all environment variables:
+eb printenv
+
+
+# ============================================================
+# Step 6: Deploy Application
+# ============================================================
+eb deploy
+
+
+# ============================================================
+# Step 7: Open Application in Browser
+# ============================================================
+eb open
+
+
+# ============================================================
+# Additional Useful Commands
+# ============================================================
+
+# View application logs
+# eb logs
+
+# View real-time logs
+# eb logs --stream
+
+# Check environment health
+# eb health
+
+# SSH into instance
+# eb ssh
+
+# Scale instances
+# eb scale 2
+
+# Terminate environment (⚠️ DESTRUCTIVE)
+# eb terminate bot-management-prod

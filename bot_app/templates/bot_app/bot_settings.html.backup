@@ -1,0 +1,654 @@
+{% extends "owner/base.html" %} {% load static %} {% block content %}
+<div class="container mx-auto px-4 py-6 max-w-7xl" x-data="botSettings()">
+  <!-- Header -->
+  <div
+    class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6"
+  >
+    <h3 class="text-xl sm:text-2xl font-semibold text-gray-800">
+      <i class="fas fa-robot mr-2"></i>Bot Settings
+    </h3>
+    <button
+      @click="openAddModal()"
+      class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
+    >
+      <i class="fas fa-plus"></i>
+      <span>Add Bot</span>
+    </button>
+  </div>
+
+  <!-- Bot Cards Grid -->
+  <div
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"
+  >
+    {% for bot in bots %}
+    <div
+      class="bg-white rounded-lg shadow hover:shadow-md transition-shadow border border-gray-100"
+    >
+      <!-- Card Header -->
+      <div class="p-4 sm:p-5">
+        <div class="flex justify-between items-start mb-3">
+          <div class="flex-1 min-w-0">
+            <h4
+              class="text-base sm:text-lg font-semibold text-gray-800 truncate"
+            >
+              @{{ bot.bot_username|default:"not_connected" }}
+            </h4>
+            <p class="text-xs sm:text-sm text-gray-600 truncate mt-1">
+              {{ bot.pharmacy_name }}
+            </p>
+          </div>
+          <span
+            class="ml-2 inline-flex items-center {% if bot.is_connected %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-600{% endif %} text-xs px-2 py-1 rounded whitespace-nowrap"
+          >
+            <i class="fas fa-circle text-[6px] mr-1.5"></i>
+            {% if bot.is_connected %}Connected{% else %}Offline{% endif %}
+          </span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-2 mt-4">
+          <button
+            @click="testConnection('{{ bot.id }}')"
+            class="flex-1 border border-gray-300 text-gray-700 px-3 py-2 rounded hover:bg-gray-50 transition-colors text-sm font-medium"
+            title="Test Connection"
+          >
+            <i class="fas fa-vial mr-1"></i>
+            <span class="hidden sm:inline">Test</span>
+          </button>
+
+          {% if bot.is_connected %}
+          <button
+            @click="disconnectBot('{{ bot.id }}')"
+            class="flex-1 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded transition-colors text-sm font-medium"
+            title="Disconnect Bot"
+          >
+            <i class="fas fa-unlink mr-1"></i>
+            <span class="hidden sm:inline">Disconnect</span>
+          </button>
+          {% else %}
+          <button
+            @click="connectBot('{{ bot.id }}')"
+            class="flex-1 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded transition-colors text-sm font-medium"
+            title="Connect Bot"
+          >
+            <i class="fas fa-link mr-1"></i>
+            <span class="hidden sm:inline">Connect</span>
+          </button>
+          {% endif %}
+        </div>
+
+        <!-- View and Delete Buttons -->
+        <div class="flex gap-2 mt-3">
+          <button
+            @click="openEditModal('{{ bot.id }}')"
+            class="flex-1 border border-blue-500 text-blue-600 hover:bg-blue-50 px-3 py-2 rounded transition-colors text-sm font-medium"
+          >
+            <i class="fas fa-eye mr-1"></i>
+            <span>View</span>
+          </button>
+          <button
+            @click="deleteBot('{{ bot.id }}')"
+            class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded transition-colors"
+            title="Delete Bot"
+          >
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-span-full text-center py-16">
+      <i class="fas fa-robot text-5xl text-gray-300 mb-4"></i>
+      <p class="text-gray-500 text-lg">No bots configured yet.</p>
+      <p class="text-gray-400 text-sm mt-2">Click "Add Bot" to get started.</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div
+    x-show="isModalOpen"
+    x-cloak
+    class="fixed inset-0 z-50 overflow-y-auto"
+    @keydown.escape.window="closeModal()"
+    x-transition:enter="transition ease-out duration-200"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-150"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+  >
+    <!-- Backdrop -->
+    <div
+      class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+      @click="closeModal()"
+    ></div>
+
+    <!-- Modal Content -->
+    <div class="relative min-h-screen flex items-center justify-center p-4">
+      <div
+        class="relative bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
+        @click.stop
+        x-transition:enter="transition ease-out duration-200 transform"
+        x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-150 transform"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+      >
+        <!-- Modal Header -->
+        <div
+          class="sticky top-0 bg-white border-b px-4 sm:px-6 py-4 flex justify-between items-center"
+        >
+          <h3
+            class="text-lg sm:text-xl font-semibold text-gray-800"
+            x-text="modalTitle"
+          ></h3>
+          <button
+            @click="closeModal()"
+            class="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="overflow-y-auto flex-1">
+          <form @submit.prevent="saveBot()" class="p-4 sm:p-6 space-y-4">
+            <!-- Pharmacy Name & Language -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Pharmacy Name <span class="text-red-500">*</span></label
+                >
+                <input
+                  x-model="formData.pharmacy_name"
+                  type="text"
+                  required
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Language</label
+                >
+                <select
+                  x-model="formData.language"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="en">English</option>
+                  <option value="ar">Arabic</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Telegram Token -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Telegram Token <span class="text-red-500">*</span></label
+              >
+              <div class="flex gap-2">
+                <input
+                  x-model="formData.telegram_token"
+                  :type="showToken ? 'text' : 'password'"
+                  :readonly="tokenReadonly"
+                  required
+                  class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                  :class="tokenReadonly ? 'bg-gray-50' : ''"
+                />
+                <button
+                  type="button"
+                  @click="showToken = !showToken"
+                  class="border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors"
+                >
+                  <i :class="showToken ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                </button>
+              </div>
+              <div class="mt-2 flex items-center gap-2" x-show="currentBotId">
+                <input
+                  type="checkbox"
+                  x-model="enableEditing"
+                  @change="tokenReadonly = !enableEditing"
+                  id="enableEdit"
+                  class="rounded text-blue-600 focus:ring-2 focus:ring-blue-500"
+                />
+                <label for="enableEdit" class="text-sm text-gray-600"
+                  >Enable editing</label
+                >
+              </div>
+            </div>
+
+            <!-- Bot Username -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Bot Username</label
+              >
+              <input
+                x-model="formData.bot_username"
+                type="text"
+                readonly
+                placeholder="Will be auto-filled after connection"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 text-gray-600"
+              />
+            </div>
+
+            <!-- Activate Bot Toggle -->
+            <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <input
+                type="checkbox"
+                x-model="formData.is_active"
+                id="activateBot"
+                class="w-5 h-5 rounded text-blue-600 focus:ring-2 focus:ring-blue-500"
+              />
+              <label
+                for="activateBot"
+                class="text-sm font-medium text-gray-700 cursor-pointer select-none"
+                >Activate Bot</label
+              >
+            </div>
+
+            <!-- Welcome Message -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Welcome Message</label
+              >
+              <textarea
+                x-model="formData.welcome_message"
+                rows="3"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              ></textarea>
+            </div>
+
+            <!-- Fallback Message -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Fallback Message</label
+              >
+              <textarea
+                x-model="formData.fallback_message"
+                rows="3"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              ></textarea>
+            </div>
+
+            <!-- Working Hours -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Working Hours Start</label
+                >
+                <input
+                  x-model="formData.working_hours_start"
+                  type="time"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Working Hours End</label
+                >
+                <input
+                  x-model="formData.working_hours_end"
+                  type="time"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div
+              class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t"
+            >
+              <button
+                type="button"
+                @click="closeModal()"
+                class="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center gap-2 transition-colors"
+              >
+                <i class="fas fa-check"></i>
+                <span xtext="currentBotId ? 'Update Bot' : 'Add Bot'"></span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div
+    x-show="showDeleteConfirm"
+    x-cloak
+    class="fixed inset-0 z-50 overflow-y-auto"
+    @keydown.escape.window="showDeleteConfirm = false"
+    x-transition:enter="transition ease-out duration-200"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-150"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+  >
+    <!-- Backdrop -->
+    <div
+      class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+      @click="showDeleteConfirm = false"
+    ></div>
+
+    <!-- Modal Content -->
+    <div class="relative min-h-screen flex items-center justify-center p-4">
+      <div
+        class="relative bg-white rounded-lg shadow-xl w-full max-w-md"
+        @click.stop
+        x-transition:enter="transition ease-out duration-200 transform"
+        x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-150 transform"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+      >
+        <!-- Modal Content -->
+        <div class="p-6">
+          <!-- Icon -->
+          <div
+            class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4"
+          >
+            <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+          </div>
+
+          <!-- Title and Message -->
+          <div class="text-center mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Delete Bot</h3>
+            <p class="text-sm text-gray-600">
+              Are you sure you want to delete this bot? This action cannot be
+              undone and all bot configurations will be permanently removed.
+            </p>
+          </div>
+
+          <!-- Buttons -->
+          <div class="flex flex-col-reverse sm:flex-row gap-3">
+            <button
+              type="button"
+              @click="showDeleteConfirm = false"
+              class="w-full sm:w-auto flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              @click="confirmDelete()"
+              class="w-full sm:w-auto flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium flex items-center justify-center gap-2"
+            >
+              <i class="fas fa-trash-alt"></i>
+              <span>Delete Bot</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div
+    id="toastContainer"
+    class="fixed top-4 right-4 z-50 space-y-2 max-w-sm w-full px-4 sm:px-0"
+  ></div>
+</div>
+
+<style>
+  [x-cloak] {
+    display: none !important;
+  }
+</style>
+
+<script>
+  function botSettings() {
+    return {
+      isModalOpen: false,
+      modalTitle: "",
+      currentBotId: null,
+      showToken: false,
+      tokenReadonly: false,
+      enableEditing: false,
+      showDeleteConfirm: false,
+      botToDelete: null,
+      formData: {
+        pharmacy_name: "",
+        language: "en",
+        telegram_token: "",
+        bot_username: "",
+        is_active: false,
+        welcome_message: "👋 Welcome to our pharmacy bot! How can we help you?",
+        fallback_message: "❗Sorry, I couldn't find an answer to that.",
+        working_hours_start: "09:00",
+        working_hours_end: "18:00",
+      },
+
+      getCsrfToken() {
+        return (
+          document.querySelector("[name=csrfmiddlewaretoken]")?.value ||
+          "{{ csrf_token }}"
+        );
+      },
+
+      openAddModal() {
+        this.modalTitle = "Add New Bot";
+        this.currentBotId = null;
+        this.tokenReadonly = false;
+        this.enableEditing = false;
+
+      resetForm() {
+        this.formData = {
+          pharmacy_name: "",
+          language: "en",
+          telegram_token: "",
+          bot_username: "",
+          is_active: false,
+          welcome_message:
+            "👋 Welcome to our pharmacy bot! How can we help you?",
+          fallback_message: "❗Sorry, I couldn't find an answer to that.",
+          working_hours_start: "09:00",
+          working_hours_end: "18:00",
+        };
+        this.showToken = false;
+      },
+
+      saveBot() {
+        const formData = new FormData();
+        formData.append("action", "save");
+        if (this.currentBotId) {
+          formData.append("bot_id", this.currentBotId);
+        }
+        Object.keys(this.formData).forEach((key) => {
+          formData.append(key, this.formData[key]);
+        });
+        formData.append("csrfmiddlewaretoken", this.getCsrfToken());
+
+        fetch('{% url "bot_app:bot_settings" %}', {
+          method: "POST",
+          body: formData,
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              this.showToast(data.message || "Bot saved successfully", true);
+              setTimeout(() => window.location.reload(), 1000);
+            } else {
+              this.showToast(data.error || "Failed to save bot", false);
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            this.showToast("Error saving bot", false);
+          });
+      },
+
+      deleteBot(botId) {
+        this.botToDelete = botId;
+        this.showDeleteConfirm = true;
+      },
+
+      confirmDelete() {
+        if (!this.botToDelete) return;
+
+        const formData = new FormData();
+        formData.append("action", "delete");
+        formData.append("bot_id", this.botToDelete);
+        formData.append("csrfmiddlewaretoken", this.getCsrfToken());
+
+        fetch('{% url "bot_app:bot_settings" %}', {
+          method: "POST",
+          body: formData,
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            this.showDeleteConfirm = false;
+            this.botToDelete = null;
+
+            if (data.success) {
+              this.showToast(data.message || "Bot deleted successfully", true);
+              setTimeout(() => window.location.reload(), 1000);
+            } else {
+              this.showToast(data.error || "Failed to delete bot", false);
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            this.showToast("Error deleting bot", false);
+          });
+      },
+
+      testConnection(botId) {
+        this.showToast("Testing connection...", true);
+
+        const formData = new FormData();
+        formData.append("bot_id", botId);
+        formData.append("csrfmiddlewaretoken", this.getCsrfToken());
+
+        fetch('{% url "bot_app:test_bot_connection" %}', {
+          method: "POST",
+          body: formData,
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              this.showToast(
+                data.message || "Connection test successful",
+                true
+              );
+            } else {
+              this.showToast(data.error || "Connection test failed", false);
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            this.showToast("Error testing connection", false);
+          });
+      },
+
+      connectBot(botId) {
+        this.showToast("Connecting bot...", true);
+
+        const formData = new FormData();
+        formData.append("bot_id", botId);
+        formData.append("csrfmiddlewaretoken", this.getCsrfToken());
+
+        fetch('{% url "bot_app:connect_bot" %}', {
+          method: "POST",
+          body: formData,
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              this.showToast(
+                data.message || "Bot connected successfully",
+                true
+              );
+              setTimeout(() => window.location.reload(), 1000);
+            } else {
+              this.showToast(data.error || "Failed to connect bot", false);
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            this.showToast("Error connecting bot", false);
+          });
+      },
+
+      disconnectBot(botId) {
+        if (!confirm("Are you sure you want to disconnect this bot?")) return;
+
+        this.showToast("Disconnecting bot...", true);
+
+        const formData = new FormData();
+        formData.append("bot_id", botId);
+        formData.append("csrfmiddlewaretoken", this.getCsrfToken());
+
+        fetch('{% url "bot_app:disconnect_bot" %}', {
+          method: "POST",
+          body: formData,
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              this.showToast(
+                data.message || "Bot disconnected successfully",
+                true
+              );
+              setTimeout(() => window.location.reload(), 1000);
+            } else {
+              this.showToast(data.error || "Failed to disconnect bot", false);
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            this.showToast("Error disconnecting bot", false);
+          });
+      },
+
+      showToast(message, isSuccess = true) {
+        const toast = document.createElement("div");
+        toast.className = `${
+          isSuccess ? "bg-green-500" : "bg-red-500"
+        } text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 transform transition-all duration-300 ease-in-out`;
+        toast.innerHTML = `
+        <i class="fas ${
+          isSuccess ? "fa-check-circle" : "fa-exclamation-circle"
+        } text-lg"></i>
+        <span class="flex-1 text-sm font-medium">${message}</span>
+        <button onclick="this.parentElement.remove()" class="hover:bg-white hover:bg-opacity-20 rounded p-1">
+          <i class="fas fa-times text-sm"></i>
+        </button>
+      `;
+        const container = document.getElementById("toastContainer");
+        container.appendChild(toast);
+
+        setTimeout(() => {
+          toast.style.opacity = "0";
+          toast.style.transform = "translateX(100%)";
+          setTimeout(() => toast.remove(), 300);
+        }, 4000);
+      },
+    };
+  }
+</script>
+{% endblock %}

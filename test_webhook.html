@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Telegram Webhook</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+      }
+      input,
+      textarea {
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 8px;
+      }
+      button {
+        padding: 10px 20px;
+        background: #0088cc;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      #response {
+        margin-top: 20px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        background: #f9f9f9;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Test Telegram Webhook</h2>
+      <p>
+        Manually send a fake update to your bot's webhook to see if it responds.
+      </p>
+
+      <label for="token">Bot Token:</label>
+      <input
+        type="text"
+        id="token"
+        placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+      />
+
+      <label for="payload">JSON Payload (Fake Update):</label>
+      <textarea id="payload" rows="10">
+{
+    "update_id": 10000,
+    "message": {
+        "message_id": 1365,
+        "from": {
+            "id": 1111111,
+            "is_bot": false,
+            "first_name": "Test User",
+            "username": "testuser"
+        },
+        "chat": {
+            "id": 1111111,
+            "first_name": "Test User",
+            "username": "testuser",
+            "type": "private"
+        },
+        "date": 1441645532,
+        "text": "/start"
+    }
+}
+        </textarea
+      >
+
+      <button onclick="sendWebhook()">Send Test Update</button>
+
+      <div id="response">Response will appear here...</div>
+    </div>
+
+    <script>
+      function sendWebhook() {
+        const token = document.getElementById("token").value.trim();
+        const payload = document.getElementById("payload").value;
+        const responseDiv = document.getElementById("response");
+
+        if (!token) {
+          alert("Please enter a bot token");
+          return;
+        }
+
+        const url = `https://mytelebot.com/webhook/telegram/${token}/`;
+        responseDiv.innerHTML = "Sending...";
+
+        fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: payload,
+        })
+          .then((response) => {
+            responseDiv.innerHTML = `Status: ${response.status} ${response.statusText}<br>`;
+            return response.text();
+          })
+          .then((data) => {
+            responseDiv.innerHTML += `Body: ${data}`;
+          })
+          .catch((error) => {
+            responseDiv.innerHTML = `Error: ${error}`;
+          });
+      }
+    </script>
+  </body>
+</html>

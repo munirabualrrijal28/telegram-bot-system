@@ -1,0 +1,130 @@
+{# templates/bot_app/partials/faq_list_by_category.html #}
+<div class="space-y-4">
+  <!-- Action row -->
+  <div class="flex justify-between items-center mb-2">
+    <div class="text-sm text-gray-600">
+      Category: <strong>{{ category.name }}</strong>
+    </div>
+    <div class="flex gap-2">
+      <button
+        data-action="add-subcategory"
+        data-category-id="{{ category.id }}"
+        class="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors"
+      >
+        + Subcategory
+      </button>
+      <button
+        data-action="add-question"
+        data-category-id="{{ category.id }}"
+        class="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors"
+      >
+        + FAQ
+      </button>
+      <button
+        data-action="add-page"
+        data-category-id="{{ category.id }}"
+        class="px-3 py-1 bg-purple-600 text-white rounded text-sm hover:bg-purple-700 transition-colors"
+      >
+        + Page
+      </button>
+    </div>
+  </div>
+
+  <!-- Subcategories (with nesting support) -->
+  {% if subcategories %}
+  <div>
+    <h4 class="text-sm font-semibold mb-3 text-gray-700">Subcategories</h4>
+    <div class="space-y-3">
+      {% for sub in subcategories %} 
+      {% include "bot_app/partials/subcategory_tree_item.html" with sub=sub depth=0 %} 
+      {%endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Pages -->
+  <div>
+    <h4 class="text-sm font-semibold mb-3 text-gray-700">Pages</h4>
+    {% if pages %}
+    <div class="space-y-3">
+      {% for page in pages %} {% include "bot_app/partials/page_list_item.html" with page=page %} {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-gray-400 text-xs italic ml-4">No pages yet.</p>
+    {% endif %}
+  </div>
+
+  <!-- FAQs -->
+  <div>
+    <h4 class="text-sm font-semibold mb-3 text-gray-700">
+      Questions & Answers
+    </h4>
+    {% if faqs %}
+    <div class="space-y-3">
+      {% for faq in faqs %}
+      <div
+        class="p-4 bg-white border border-gray-200 rounded-lg hover:border-blue-300 transition-colors flex justify-between items-start"
+      >
+        <div class="flex-1 pr-4">
+          <div class="font-medium text-gray-900 mb-1">
+            Q: {{ faq.question }}
+          </div>
+          <div class="text-sm text-gray-600">
+            A: {{ faq.answer|default:"No answer provided" }}
+          </div>
+        </div>
+
+        <div class="flex flex-col items-end gap-2">
+          <div class="flex gap-1">
+            <button
+              data-action="edit-question"
+              data-faq-id="{{ faq.id }}"
+              class="px-2 py-1 bg-yellow-50 text-yellow-600 hover:bg-yellow-100 rounded text-xs font-medium transition-colors"
+            >
+              Edit
+            </button>
+            <button
+              data-action="delete-question"
+              data-faq-id="{{ faq.id }}"
+              class="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded text-xs font-medium transition-colors"
+            >
+              Delete
+            </button>
+          </div>
+
+          <button
+            data-action="toggle-status"
+            data-faq-id="{{ faq.id }}"
+            class="text-xs px-2 py-1 rounded {% if faq.is_active %}bg-green-100 text-green-700 border border-green-300{% else %}bg-gray-100 text-gray-600 border border-gray-300{% endif %} font-medium transition-colors"
+          >
+            {% if faq.is_active %}✓ Active{% else %}✗ Inactive{% endif %}
+          </button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div
+      class="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300"
+    >
+      <svg
+        class="w-12 h-12 mx-auto mb-3 text-gray-400"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        ></path>
+      </svg>
+      <p class="text-gray-500 text-sm">No FAQs in this category yet</p>
+      <p class="text-gray-400 text-xs mt-1">
+        Click "+ FAQ" above to add your first question
+      </p>
+    </div>
+    {% endif %}
+  </div>
+</div>

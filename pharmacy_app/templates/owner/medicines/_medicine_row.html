@@ -1,0 +1,35 @@
+<!-- owner/_medicine_row.html -->
+<tr id="row-{{ m.id }}">
+  <td class="d-flex align-items-center">
+    {% if m.image %}
+    <img src="{{ m.image.url }}" alt="{{ m.name }}" style="height:40px; width:auto;" class="me-2 rounded">
+    {% endif %}
+    <div>
+      <div class="fw-semibold">{{ m.name }}</div>
+      {% if m.dosage_form or m.strength %}
+      <small class="text-muted">{{ m.dosage_form }} {{ m.strength }}</small>
+      {% endif %}
+    </div>
+  </td>
+
+  <td>{{ m.sku }}</td>
+  <td>{{ m.brand }}</td>
+  <td>${{ m.price|floatformat:2 }}</td>
+
+  <td>
+    <form class="stock-form d-inline" data-id="{{ m.id }}">
+      {% csrf_token %}
+      <input type="number" name="stock" value="{{ m.stock_quantity }}" class="form-control form-control-sm" style="width: 90px;">
+    </form>
+
+    {% if m.stock_quantity <= m.low_stock_threshold %}
+      <div class="small mt-1"><span class="badge bg-danger">Low: {{ m.stock_quantity }}</span></div>
+    {% endif %}
+  </td>
+
+  <td>
+    <a href="{% url 'pharmacy_app:medicine_edit' m.id %}" class="btn btn-sm btn-outline-primary me-1">Edit</a>
+    <a href="{% url 'pharmacy_app:medicine_delete' m.id %}" class="btn btn-sm btn-outline-danger me-1">Delete</a>
+    <a href="#" class="btn btn-sm btn-outline-secondary">View</a>
+  </td>
+</tr>

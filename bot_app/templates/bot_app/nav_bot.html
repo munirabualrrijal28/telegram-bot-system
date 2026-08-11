@@ -1,0 +1,21 @@
+   <h3>إدارة البوت</h3>
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <!-- <a class="nav-link active" data-bs-toggle="tab" href="#tab-faq">الأسئلة (FAQ)</a> -->
+      <a class="nav-link {% if request.path == '/dashboard/bot_app-management/' %}active{% endif %}"
+        href="{% url 'bot_app:bot_manage' %}">
+        الأسئلة (FAQ)
+      </a>
+    </li>
+    <li class="nav-item">
+      <!-- <a class="nav-link" data-bs-toggle="tab" href="bot_settings.html">إعدادات البوت</a> -->
+      <a class="nav-link {% if request.path == '/bot-settings/' %}active{% endif %}"
+        href="{% url 'bot_app:bot_settings' %}">
+        إعدادات البوت
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="tab" href="#tab-logs">سجلات المحادثات</a>
+    </li>
+  </ul>
+  

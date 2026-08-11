@@ -1,0 +1,131 @@
+{% extends "admin_app/base_admin.html" %}
+
+{% block title %}Manage User - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <a href="{% url 'admin_app:dashboard' %}" class="text-primary-600 hover:text-primary-700 flex items-center gap-2 mb-4">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Back to Dashboard
+    </a>
+    <h2 class="text-2xl font-bold text-gray-800">Manage User</h2>
+    <p class="text-gray-600">View and manage user subscription</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- User Info Card -->
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">User Information</h3>
+            
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Name</label>
+                    <p class="text-gray-900">{{ user.name|default:"Not set" }}</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Email</label>
+                    <p class="text-gray-900">{{ user.email|default:"Not set" }}</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Phone</label>
+                    <p class="text-gray-900">{{ user.phone|default:"Not set" }}</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Workspace</label>
+                    <p class="text-gray-900">{{ user.workspace_name|default:"No workspace" }}</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">User ID</label>
+                    <p class="text-gray-900 font-mono text-sm">{{ user.id }}</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Joined</label>
+                    <p class="text-gray-900">{{ user.created_at|date:"M d, Y" }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Subscription Info Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Current Subscription</h3>
+            
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Plan</label>
+                    <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full {% if user.plan_name == 'Max' %}bg-purple-100 text-purple-800{% elif user.plan_name == 'Pro' %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {{ user.plan_name }}
+                    </span>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Status</label>
+                    <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full {% if user.status == 'active' %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {{ user.status|title }}
+                    </span>
+                </div>
+                
+                {% if user.start_date %}
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Start Date</label>
+                    <p class="text-gray-900">{{ user.start_date|date:"M d, Y" }}</p>
+                </div>
+                {% endif %}
+                
+                {% if user.end_date %}
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">End Date</label>
+                    <p class="text-gray-900">{{ user.end_date|date:"M d, Y" }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Plan Management Card -->
+    <div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Update Plan</h3>
+            
+            <form method="POST" class="space-y-4">
+                {% csrf_token %}
+                
+                <div>
+                    <label for="plan_name" class="block text-sm font-medium text-gray-700 mb-2">New Plan</label>
+                    <select name="plan_name" id="plan_name" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
+                        <option value="Free" {% if user.plan_name == 'Free' %}selected{% endif %}>Free Plan</option>
+                        <option value="Pro" {% if user.plan_name == 'Pro' %}selected{% endif %}>Pro Plan</option>
+                        <option value="Max" {% if user.plan_name == 'Max' %}selected{% endif %}>Max Plan</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <select name="status" id="status" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
+                        <option value="active" {% if user.status == 'active' %}selected{% endif %}>Active</option>
+                        <option value="cancelled" {% if user.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                        <option value="expired" {% if user.status == 'expired' %}selected{% endif %}>Expired</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="w-full px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium">
+                    Update Subscription
+                </button>
+            </form>
+            
+            <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p class="text-xs text-blue-800">
+                    <strong>Note:</strong> Plan changes take effect immediately. The user will be notified of the change.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

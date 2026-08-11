@@ -1,0 +1,46 @@
+<!-- bot/partials/faq_modal.html -->
+<div class="modal fade" id="faqModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="faqForm">
+      <input type="hidden" id="faqId" name="id">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="faqModalLabel"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label>السؤال</label>
+            <input type="text" id="question" name="question" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label>الإجابة</label>
+            <textarea id="answer" name="answer" class="form-control"></textarea>
+          </div>
+          <!--  -->
+          <div class="mb-3">
+            <select id="category" name="category">
+              <option value="">-- اختر تصنيف --</option>
+              {% for cat in categories %}
+              <option value="{{ cat.id }}">{{ cat.name }}</option>
+              {% for sub in cat.subcategories.all %}
+              <option value="{{ sub.id }}">-- {{ sub.name }}</option>
+              {% endfor %}
+              {% endfor %}
+            </select>
+
+          </div>
+          <!--  -->
+          <div class="form-check">
+            <input type="checkbox" id="is_active" name="is_active" class="form-check-input">
+            <label class="form-check-label" for="is_active">نشط</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+          <button type="submit" class="btn btn-primary">حفظ</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

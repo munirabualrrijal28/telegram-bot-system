@@ -216,3 +216,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+deploy_manual.zip
+
+CREATE_EB_ENVIRONMENT.md
+DEPLOY_NOW.md
+deploy_production.ps1
+fix_duplicate_oauth.sql

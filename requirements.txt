@@ -1,0 +1,17 @@
+# requirements.txt - ULTRA MINIMAL VERSION FOR EB
+# Use this to get deployment working, then add packages gradually
+
+Django==5.1.4
+gunicorn==22.0.0
+whitenoise==6.8.2
+psycopg2-binary==2.9.9
+PyMySQL==1.1.1
+boto3==1.35.0
+django-storages==1.14.4
+Pillow==10.4.0
+requests==2.32.3
+
+# Django allauth for Google OAuth
+django-allauth==65.3.0
+PyJWT==2.10.1
+cryptography==44.0.0

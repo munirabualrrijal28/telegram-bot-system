@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>{{ page.name }}</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'bot_app/css/miniapp.css' %}" />
+  </head>
+  <body>
+    <div class="header">
+      <h1>{{ page.name }}</h1>
+      <p>{{ groups_data|length }} group{{ groups_data|length|pluralize }}</p>
+    </div>
+
+    {% if groups_data %}
+    <div class="list">
+      {% for group in groups_data %}
+      <div class="group-card" id="group-{{ group.id }}">
+        <div class="group-header" onclick="toggleGroup('{{ group.id }}')">
+          <div class="group-thumb">
+            {% if group.image_url %}
+            <img
+              src="{{ group.image_url }}"
+              alt="{{ group.name }}"
+              loading="lazy"
+            />
+            {% else %} 📦 {% endif %}
+          </div>
+          <div class="group-meta">
+            <h3>{{ group.name }}</h3>
+            <span
+              >{{ group.items|length }} item{{ group.items|length|pluralize
+              }}</span
+            >
+          </div>
+          {% if group.contact_username %}
+          <a
+            class="contact-btn"
+            href="https://t.me/{{ group.contact_username }}"
+            target="_blank"
+            rel="noopener"
+            onclick="event.stopPropagation()"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"
+              />
+            </svg>
+            Contact
+          </a>
+          {% endif %}
+          <span class="chevron">▶</span>
+        </div>
+
+        <div class="items-panel">
+          {% if group.items %}
+          <div class="items-grid">
+            {% for item in group.items %}
+            <div class="item-card">
+              <div class="item-img">
+                {% if item.image_url %}
+                <img
+                  src="{{ item.image_url }}"
+                  alt="{{ item.name }}"
+                  loading="lazy"
+                />
+                {% else %} 🖼️ {% endif %}
+              </div>
+              <div class="item-body">
+                <h4>{{ item.name }}</h4>
+                {% if item.description %}
+                <p>{{ item.description }}</p>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="no-items">No items added yet.</div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty">
+      <div class="icon">📭</div>
+      <h2>No groups yet</h2>
+      <p>This page doesn't have any groups added yet.</p>
+    </div>
+    {% endif %}
+
+    <script>
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+      tg.expand();
+
+      function toggleGroup(id) {
+        const card = document.getElementById("group-" + id);
+        card.classList.toggle("open");
+      }
+
+      // Auto-open first group if only one exists
+      const cards = document.querySelectorAll(".group-card");
+      if (cards.length === 1) cards[0].classList.add("open");
+    </script>
+  </body>
+</html>

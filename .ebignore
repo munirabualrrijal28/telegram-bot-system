@@ -1,0 +1,13 @@
+# Elastic Beanstalk Ignore File
+venv/
+env/
+.git/
+.idea/
+.vscode/
+__pycache__/
+*.pyc
+*.pyo
+db.sqlite3
+.DS_Store
+django_env/
+.elasticbeanstalk/

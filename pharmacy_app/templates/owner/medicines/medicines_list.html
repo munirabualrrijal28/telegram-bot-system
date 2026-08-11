@@ -1,0 +1,802 @@
+{% extends "owner/base.html" %}
+{% load static %}
+{% block title %}Medicines - TeleBot Admin{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    
+    <!-- Left Column: Actions & Stats -->
+    <div class="lg:col-span-1 space-y-6">
+        <!-- Actions Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-full flex flex-col">
+            <h2 class="text-lg font-bold text-gray-900 mb-6">Actions</h2>
+            
+            <!-- Add Button -->
+            <button onclick="openAddMedicineModal()" 
+                    class="w-full py-2.5 px-4 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 mb-8">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Add Medicine
+            </button>
+
+            <!-- Import/Export Section -->
+            <div class="space-y-3 mb-auto">
+                <p class="text-sm text-gray-500 font-medium mb-2">Import/Export</p>
+                
+                <button onclick="openImportModal()" class="w-full py-2 px-4 bg-white border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-3 text-sm">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    Import (Excel/CSV)
+                </button>
+                
+                <button onclick="window.location.href='{% url 'pharmacy_app:medicine_export_csv' %}'" 
+                        class="w-full py-2 px-4 bg-white border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-3 text-sm">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                    </svg>
+                    Export to Excel
+                </button>
+            </div>
+
+            <!-- Total Count (at bottom) -->
+            <div class="mt-8 pt-6 border-t border-gray-100">
+                <p class="text-sm text-gray-500 font-medium">Total Medicines</p>
+                <p class="text-3xl font-bold text-blue-500 mt-1">{{ medicines.paginator.count }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Medicines List -->
+    <div class="lg:col-span-3">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col min-h-[600px]">
+            
+            <!-- Card Header -->
+            <div class="p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <h2 class="text-xl font-bold text-gray-900">Medicines List</h2>
+                
+                <!-- Search -->
+                <div class="w-full sm:max-w-xs">
+                    <form method="get" action="{% url 'pharmacy_app:medicines_list' %}" class="relative">
+                        <input type="text" 
+                               name="q" 
+                               value="{{ q }}" 
+                               placeholder="Search medicines..."
+                               class="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto flex-1">
+                <table class="w-full">
+                    <thead class="bg-white border-b border-gray-100">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Active Ingredient</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Price</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Stock Status</th>
+                            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for m in medicines %}
+                        <tr class="hover:bg-gray-50 transition-colors group">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="font-semibold text-gray-900">{{ m.name }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-600">{{ m.generic_name|default:"-" }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-600">{{ m.brand|default:"-" }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">${{ m.price }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if m.stock_quantity > m.low_stock_threshold %}
+                                    <span class="px-2.5 py-1 text-xs font-medium bg-green-50 text-green-600 rounded-md border border-green-100">In Stock</span>
+                                {% elif m.stock_quantity > 0 %}
+                                    <span class="px-2.5 py-1 text-xs font-medium bg-amber-50 text-amber-600 rounded-md border border-amber-100">Low Stock</span>
+                                {% else %}
+                                    <span class="px-2.5 py-1 text-xs font-medium bg-red-50 text-red-600 rounded-md border border-red-100">Out of Stock</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button type="button" onclick="openEditMedicineModal('{% url 'pharmacy_app:medicine_edit' m.pk %}')" 
+                                       class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                                        </svg>
+                                    </button>
+                                    <button type="button" onclick="openDeleteMedicineModal('{% url 'pharmacy_app:medicine_delete' m.pk %}', '{{ m.name }}')" 
+                                       class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-24 text-center text-gray-500">
+                                <div class="flex flex-col items-center justify-center">
+                                    <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                                        <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                        </svg>
+                                    </div>
+                                    <p class="text-lg font-medium text-gray-900">No medicines found</p>
+                                    <p class="text-sm text-gray-500 mt-1">Get started by adding your first medicine</p>
+                                    <button onclick="openAddMedicineModal()" class="mt-4 px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors">
+                                        Add Medicine
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if medicines.has_other_pages %}
+            <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+                <div class="text-sm text-gray-500">
+                    Showing <span class="font-medium text-gray-900">{{ medicines.start_index }}</span> - <span class="font-medium text-gray-900">{{ medicines.end_index }}</span> of <span class="font-medium text-gray-900">{{ medicines.paginator.count }}</span>
+                </div>
+                
+                <div class="flex gap-2">
+                    {% if medicines.has_previous %}
+                        <a href="?page={{ medicines.previous_page_number }}{% if q %}&q={{ q }}{% endif %}" 
+                           class="px-3 py-1.5 text-sm bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors">
+                            Previous
+                        </a>
+                    {% endif %}
+                    
+                    {% if medicines.has_next %}
+                        <a href="?page={{ medicines.next_page_number }}{% if q %}&q={{ q }}{% endif %}" 
+                           class="px-3 py-1.5 text-sm bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors">
+                            Next
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Medicine Modal -->
+<div id="medicineModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <h3 id="modalTitle" class="text-xl font-bold text-gray-900">Add New Medicine</h3>
+            <button type="button" onclick="closeMedicineModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <form id="medicineForm" method="post" enctype="multipart/form-data" class="p-6 space-y-4">
+            <div id="medicineFormContainer">
+                {% include "owner/partials/medicine_form_modal_content.html" %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+
+{% endblock %}
+
+{% block modal %}
+<div id="medicineModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-[100] flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <h3 id="modalTitle" class="text-xl font-bold text-gray-900">Add New Medicine</h3>
+            <button type="button" onclick="closeMedicineModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <form id="medicineForm" method="post" enctype="multipart/form-data" class="p-6 space-y-4">
+            <div id="medicineFormContainer">
+                {% include "owner/partials/medicine_form_modal_content.html" %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteMedicineModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-[100] flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+        <div class="p-6 text-center">
+            <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Delete Medicine</h3>
+            <p id="deleteConfirmationMsg" class="text-gray-600 mb-6">Are you sure you want to delete this medicine?</p>
+            
+            <form id="deleteMedicineForm" method="post">
+                {% csrf_token %}
+                <div class="flex items-center justify-center gap-3">
+                    <button type="button" onclick="closeDeleteMedicineModal()" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">Delete Medicine</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Import Medicine Modal -->
+<div id="importModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-[100] flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <h3 class="text-xl font-bold text-gray-900">Import Medicines</h3>
+            <button type="button" onclick="closeImportModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="p-6">
+            <!-- Step 1: File Upload -->
+            <div id="uploadStep" class="space-y-4">
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                    <div class="mt-4">
+                        <label for="importFileInput" class="cursor-pointer">
+                            <span class="mt-2 block text-sm font-medium text-gray-900">
+                                Drop your Excel or CSV file here, or click to browse
+                            </span>
+                            <span class="mt-1 block text-xs text-gray-500">
+                                Supports .xlsx, .xls, .csv files
+                            </span>
+                        </label>
+                        <input type="file" id="importFileInput" accept=".xlsx,.xls,.csv" class="hidden" onchange="handleFileUpload(event)">
+                    </div>
+                </div>
+                <p id="uploadStatus" class="text-sm text-gray-600 hidden"></p>
+            </div>
+
+            <!-- Step 2: Column Mapping -->
+            <div id="mappingStep" class="hidden space-y-4">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <p class="text-sm text-blue-800">
+                        <strong>Instructions:</strong> Map each column from your file to the corresponding database field. Fields marked with * are required.
+                    </p>
+                </div>
+
+                <div id="columnMappingContainer" class="space-y-3">
+                    <!-- Column mappings will be inserted here -->
+                </div>
+
+                <div class="flex items-center justify-between pt-4 border-t">
+                    <button type="button" onclick="showPreview()" id="previewBtn" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                        Preview Data
+                    </button>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="closeImportModal()" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="button" onclick="processImport()" id="importBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            Import Medicines
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div id="previewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-[60] flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <h3 class="text-xl font-bold text-gray-900">Preview Import Data</h3>
+            <button type="button" onclick="closePreviewModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="p-6">
+            <div id="previewTableContainer" class="overflow-x-auto">
+                <!-- Preview table will be inserted here -->
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button type="button" onclick="closePreviewModal()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                    Close Preview
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
+<script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
+<script src="https://unpkg.com/filepond-plugin-image-exif-orientation/dist/filepond-plugin-image-exif-orientation.js"></script>
+<script src="https://unpkg.com/filepond/dist/filepond.js"></script>
+<link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet">
+<link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet">
+
+<script>
+    let pond = null;
+
+    // Initialize FilePond
+    function initFilePond() {
+        FilePond.registerPlugin(
+            FilePondPluginImagePreview,
+            FilePondPluginFileValidateType,
+            FilePondPluginImageExifOrientation
+        );
+        const inputElement = document.querySelector('#modalImageInput');
+        if (!inputElement) return;
+
+        // Destroy existing instance if any
+        if (pond) {
+            FilePond.destroy(inputElement);
+        }
+
+        // Check for existing image
+        const existingUrlInput = document.getElementById('existingImageUrl');
+        const files = [];
+        if (existingUrlInput && existingUrlInput.value) {
+            files.push({
+                source: existingUrlInput.value,
+                options: {
+                    type: 'local'
+                }
+            });
+        }
+
+        pond = FilePond.create(inputElement, {
+            acceptedFileTypes: ['image/*'],
+            allowMultiple: false,
+            instantUpload: true,
+            files: files,
+            server: {
+                process: {
+                    url: "{% url 'pharmacy_app:upload_temp_image' %}",
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                    onload: (responseText) => {
+                        document.getElementById('modalUploadedFile').value = responseText;
+                        return responseText;
+                    },
+                    onerror: () => alert("Upload failed")
+                },
+                revert: {
+                    url: "{% url 'pharmacy_app:upload_temp_image' %}",
+                    method: 'DELETE',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                    onload: () => {
+                        document.getElementById('modalUploadedFile').value = "";
+                    }
+                },
+                load: (source, load, error, progress, abort, headers) => {
+                    // For editing: load existing image
+                    fetch(source)
+                        .then(res => res.blob())
+                        .then(load)
+                        .catch(err => {
+                            console.error("Failed to load image:", err);
+                            error("Could not load image");
+                        });
+                }
+            }
+        });
+    }
+
+    // Modal Functions
+    function openAddMedicineModal() {
+        const modal = document.getElementById('medicineModal');
+        const form = document.getElementById('medicineForm');
+        const title = document.getElementById('modalTitle');
+        const formContainer = document.getElementById('medicineFormContainer');
+        
+        // Reset state
+        title.textContent = 'Add New Medicine';
+        form.action = "{% url 'pharmacy_app:medicine_add' %}";
+        form.reset();
+        
+        // Clear hidden file input
+        const hiddenFile = document.getElementById('modalUploadedFile');
+        if(hiddenFile) hiddenFile.value = "";
+
+        // Load empty form content
+        formContainer.innerHTML = `{% include "owner/partials/medicine_form_modal_content.html" %}`;
+
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        
+        // Re-init FilePond (it might be destroyed or need reset)
+        initFilePond();
+    }
+
+    function openEditMedicineModal(url) {
+        const modal = document.getElementById('medicineModal');
+        const title = document.getElementById('modalTitle');
+        const formContainer = document.getElementById('medicineFormContainer');
+        
+        title.textContent = 'Edit Medicine';
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        
+        // Show loading state
+        formContainer.innerHTML = '<div class="p-6 text-center"><p class="text-gray-500">Loading...</p></div>';
+
+        // Fetch form HTML
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.html) {
+                formContainer.innerHTML = data.html;
+                const form = document.getElementById('medicineForm');
+                
+                // Update form action
+                document.getElementById('medicineForm').action = url;
+                
+                // Re-init FilePond
+                initFilePond();
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Failed to load medicine data');
+            closeMedicineModal();
+        });
+    }
+
+    function closeMedicineModal() {
+        document.getElementById('medicineModal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    // Delete Modal
+    function openDeleteMedicineModal(url, name) {
+        const modal = document.getElementById('deleteMedicineModal');
+        const form = document.getElementById('deleteMedicineForm');
+        const msg = document.getElementById('deleteConfirmationMsg');
+        
+        form.action = url;
+        msg.textContent = `Are you sure you want to delete "${name}"? This action cannot be undone.`;
+        
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDeleteMedicineModal() {
+        document.getElementById('deleteMedicineModal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    // Import Modal Functions
+    let importData = {
+        columns: [],
+        dbFields: [],
+        mapping: {},
+        totalRows: 0
+    };
+
+    function openImportModal() {
+        document.getElementById('importModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        // Reset to upload step
+        document.getElementById('uploadStep').classList.remove('hidden');
+        document.getElementById('mappingStep').classList.add('hidden');
+        document.getElementById('uploadStatus').classList.add('hidden');
+    }
+
+    function closeImportModal() {
+        document.getElementById('importModal').classList.add('hidden');
+        document.body.style.overflow = '';
+        // Reset file input
+        document.getElementById('importFileInput').value = '';
+        importData = { columns: [], dbFields: [], mapping: {}, totalRows: 0 };
+    }
+
+    function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const statusEl = document.getElementById('uploadStatus');
+        statusEl.textContent = 'Uploading and processing file...';
+        statusEl.classList.remove('hidden');
+
+        const formData = new FormData();
+        formData.append('import_file', file);
+
+        fetch("{% url 'pharmacy_app:medicine_import_upload' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                importData.columns = data.columns;
+                importData.dbFields = data.db_fields;
+                importData.totalRows = data.total_rows;
+                
+                statusEl.textContent = `File uploaded successfully! Found ${data.total_rows} rows.`;
+                statusEl.classList.add('text-green-600');
+                
+                // Show mapping step
+                document.getElementById('uploadStep').classList.add('hidden');
+                document.getElementById('mappingStep').classList.remove('hidden');
+                
+                // Build column mapping UI
+                const container = document.getElementById('columnMappingContainer');
+                container.innerHTML = '';
+                
+                data.columns.forEach(col => {
+                    const colDiv = document.createElement('div');
+                    colDiv.className = 'grid grid-cols-3 gap-4 items-center p-4 bg-gray-50 rounded-lg';
+                    
+                    colDiv.innerHTML = `
+                        <div>
+                            <p class="font-medium text-gray-900">${col.name}</p>
+                            <p class="text-xs text-gray-500">Sample: ${col.sample.slice(0, 2).join(', ')}</p>
+                        </div>
+                        <div>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                    onchange="handleColumnMapping('${col.name}', this.value, event)">
+                                ${data.db_fields.map(field => 
+                                    `<option value="${field.value}">${field.label}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div id="status-${col.name}" class="text-sm text-gray-400">
+                            Skipped
+                        </div>
+                    `;
+                    
+                    container.appendChild(colDiv);
+                });
+                
+                validateMapping();
+            } else {
+                statusEl.textContent = 'Upload failed: ' + (data.error || 'Unknown error');
+                statusEl.classList.add('text-red-600');
+            }
+        })
+        .catch(error => {
+            console.error('Upload error:', error);
+            statusEl.textContent = 'Error uploading file';
+            statusEl.classList.add('text-red-600');
+        });
+    }
+
+    function handleColumnMapping(fileColumn, dbField, event) {
+        // Check if this field is already mapped to another column
+        const existingMapping = Object.entries(importData.mapping)
+            .find(([col, field]) => field === dbField && col !== fileColumn && dbField !== '');
+        
+        if (existingMapping) {
+            alert(`The field "${dbField}" is already mapped to column "${existingMapping[0]}". Please choose a different field.`);
+            event.target.value = '';
+            return;
+        }
+        
+        if (dbField) {
+            importData.mapping[fileColumn] = dbField;
+            document.getElementById(`status-${fileColumn}`).innerHTML = 
+                `<span class="text-green-600">✓ Mapped</span>`;
+        } else {
+            delete importData.mapping[fileColumn];
+            document.getElementById(`status-${fileColumn}`).innerHTML = 
+                `<span class="text-gray-400">Skipped</span>`;
+        }
+        
+        validateMapping();
+    }
+
+    function validateMapping() {
+        const mappedFields = Object.values(importData.mapping);
+        const requiredFields = importData.dbFields
+            .filter(f => f.required)
+            .map(f => f.value);
+        
+        const missingRequired = requiredFields.filter(f => !mappedFields.includes(f));
+        const importBtn = document.getElementById('importBtn');
+        
+        if (missingRequired.length > 0) {
+            importBtn.disabled = true;
+            importBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            importBtn.title = `Missing required fields: ${missingRequired.join(', ')}`;
+        } else {
+            importBtn.disabled = false;
+            importBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            importBtn.title = '';
+        }
+    }
+
+    function showPreview() {
+        const previewBtn = document.getElementById('previewBtn');
+        previewBtn.disabled = true;
+        previewBtn.textContent = 'Loading preview...';
+
+        fetch("{% url 'pharmacy_app:medicine_import_preview' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `mapping=${encodeURIComponent(JSON.stringify(importData.mapping))}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                renderPreviewTable(data.preview_data, data.mapped_fields, data.total_rows);
+                document.getElementById('previewModal').classList.remove('hidden');
+            } else {
+                alert('Error loading preview: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Preview error:', error);
+            alert('Error loading preview');
+        })
+        .finally(() => {
+            previewBtn.disabled = false;
+            previewBtn.textContent = 'Preview Data';
+        });
+    }
+
+    function renderPreviewTable(data, fields, totalRows) {
+        const container = document.getElementById('previewTableContainer');
+        
+        let html = `
+            <div class="mb-4">
+                <p class="text-sm text-gray-600">Showing first 50 rows of ${totalRows} total</p>
+            </div>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+        `;
+        
+        fields.forEach(field => {
+            html += `<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">${field}</th>`;
+        });
+        
+        html += '</tr></thead><tbody class="bg-white divide-y divide-gray-200">';
+        
+        data.forEach(row => {
+            html += `<tr class="hover:bg-gray-50">
+                <td class="px-4 py-3 text-sm text-gray-500">${row._row_num}</td>`;
+            fields.forEach(field => {
+                const value = row[field] || '-';
+                html += `<td class="px-4 py-3 text-sm text-gray-900">${value}</td>`;
+            });
+            html += '</tr>';
+        });
+        
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    function closePreviewModal() {
+        document.getElementById('previewModal').classList.add('hidden');
+    }
+
+    function processImport() {
+        const importBtn = document.getElementById('importBtn');
+        if (importBtn.disabled) {
+            alert('Please map all required fields before importing');
+            return;
+        }
+
+        if (!confirm(`Are you sure you want to import ${importData.totalRows} rows?`)) {
+            return;
+        }
+
+        importBtn.disabled = true;
+        importBtn.textContent = 'Importing...';
+
+        fetch("{% url 'pharmacy_app:medicine_import_process' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `mapping=${encodeURIComponent(JSON.stringify(importData.mapping))}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                let message = `Import completed!\n\n`;
+                message += `✓ Created: ${data.created} medicines\n`;
+                message += `✓ Updated: ${data.updated} medicines\n`;
+                if (data.skipped > 0) {
+                    message += `⚠ Skipped: ${data.skipped} rows\n`;
+                }
+                if (data.errors && data.errors.length > 0) {
+                    message += `\nErrors:\n${data.errors.join('\n')}`;
+                }
+                
+                alert(message);
+                closeImportModal();
+                window.location.reload();
+            } else {
+                alert('Import failed: ' + (data.error || 'Unknown error'));
+                importBtn.disabled = false;
+                importBtn.textContent = 'Import Medicines';
+            }
+        })
+        .catch(error => {
+            console.error('Import error:', error);
+            alert('Error during import');
+            importBtn.disabled = false;
+            importBtn.textContent = 'Import Medicines';
+        });
+    }
+
+    // AJAX Form Submission for Add/Edit
+    document.addEventListener('submit', function(e) {
+        if (e.target && e.target.id === 'medicineForm') {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const submitBtn = document.getElementById('saveMedicineBtn');
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeMedicineModal();
+                    window.location.reload(); 
+                } else {
+                    alert('Error: ' + JSON.stringify(data.errors));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while saving.');
+            })
+            .finally(() => {
+                if(submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Save Medicine';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
